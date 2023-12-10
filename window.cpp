@@ -9,6 +9,14 @@ namespace AVE
     std::mutex Window::sharedMainLoopLock;
     bool Window::shouldSharedMainLoopStop = false;
     bool Window::sharedPollEventsQueued;
+    SDL_Window* Window::GetWindowHandle()
+    {
+        return window;
+    }
+    SDL_Renderer* Window::GetRendererHandle()
+    {
+        return renderer;
+    }
     bool Window::Open(const char* title, int x, int y, int w, int h)
     {
         if(isOpen)
@@ -17,8 +25,9 @@ namespace AVE
             return false;
         }
 
-        if((isOpen = (Init() && (window = SDL_CreateWindow(title, x, y, w, h, 0)) && (renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC)))))
+        if((isOpen = (Init() && (window = SDL_CreateWindow(title, x, y, w, h, SDL_WINDOW_RESIZABLE)) && (renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC)))))
         {
+            SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
             IDtoWindow.insert({SDL_GetWindowID(window), *this});
             std::clog << "Opened window " << this << std::endl;
             return true;
@@ -50,6 +59,26 @@ namespace AVE
     void Window::SetSize(int w, int h)
     {
         SDL_SetWindowSize(window, w, h);
+    }
+    void Window::GetPos(int *x, int *y)
+    {
+        SDL_GetWindowPosition(window, x, y);
+    }
+    void Window::GetSize(int *w, int *h)
+    {
+        SDL_GetWindowSize(window, w, h);
+    }
+    void Window::SetFullscreen()
+    {
+        SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
+    }
+    void Window::SetBorderless()
+    {
+        SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
+    }
+    void Window::SetWindowed()
+    {
+        SDL_SetWindowFullscreen(window, 0);
     }
     void Window::HandleEvents()
     {
@@ -116,6 +145,8 @@ namespace AVE
     void Window::Draw() ///TODO - rendering
     {
         SDL_RenderPresent(renderer);
+
+        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 0);
         SDL_RenderClear(renderer);
         return;
     }

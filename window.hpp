@@ -24,6 +24,9 @@ namespace AVE
         virtual void OnUpdate(){};
         virtual void OnCloseAttempt(){Close();};
     public:
+        SDL_Window* GetWindowHandle();
+        SDL_Renderer* GetRendererHandle();
+
         bool Open(const char* title, int x, int y, int w, int h);
         void Close();
         bool IsOpen();
@@ -32,6 +35,11 @@ namespace AVE
 
         void SetPos(int x, int y);
         void SetSize(int w, int h);
+        void GetPos(int *x, int *y);
+        void GetSize(int *w, int *h);
+        void SetFullscreen();
+        void SetBorderless();
+        void SetWindowed();
 
         void QueuePollEvents();//requests event poll on the start of next frame
 

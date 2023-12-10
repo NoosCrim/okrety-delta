@@ -1,6 +1,5 @@
 #include <SDL2/SDL.h>
 #include <iostream>
-#include "external/stb_image.h"
 #include "AVE.hpp"
 namespace AVE
 {
