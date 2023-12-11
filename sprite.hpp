@@ -1,15 +1,26 @@
 #pragma once
-#include "texture.hpp"
+#include <list>
+#include "common.hpp"
 namespace AVE
 {
-    class Sprite
+    class Texture;
+    class Sprite : virtual public Active
     {
+        friend class Texture;
+        std::list<Sprite*>::iterator iter;
+        Texture *texture;
+    protected:
+        //Sprite should always be created using new, and then bound to Texture, so it can later be destroyed
+        Sprite(Texture* tex, int sX, int sY, int sW, int sH, float x, float y, float w, float h, float angle, bool flipH, bool flipV);
     public:
+        virtual ~Sprite();
+        static Sprite* CreateSprite(Texture* tex, int sX = 0, int sY = 0, int sW = 0, int sH = 0, float x = 0, float y = 0, float w = 0, float h = 0, float angle = 0, bool flipH = 0, bool flipV = 0);
+        int sX = 0, sY = 0, sW = 0, sH = 0;
+        float x = 0.0f, y = 0.0f, w = 0.0f, h = 0.0f;
         float angle;
-        float drawX = 0.0f, drawY = 0.0f, drawW = 0.0f, drawH = 0.0f;
-        int sampleX = 0, sampleY = 0, sampleW = 0, sampleH = 0;
-        Texture* texture;
-        void Draw(Window* window, bool flipTexV, bool flipTexH);
-
+        bool flipH, flipV;
+        bool visible = true;
+        void Draw();
+        Texture* GetTexture(){return texture;};
     };
 }

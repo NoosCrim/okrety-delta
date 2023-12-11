@@ -8,7 +8,17 @@ namespace AVE
     std::unordered_map<uint32_t, Window&> Window::IDtoWindow;
     std::mutex Window::sharedMainLoopLock;
     bool Window::shouldSharedMainLoopStop = false;
-    bool Window::sharedPollEventsQueued;
+    Window::~Window()
+    {
+        Close();
+    }
+    void Window::Update()
+    {
+        for(Active* active : myActives)
+            active->OnUpdate();
+        Draw();
+        OnUpdate();
+    }
     SDL_Window* Window::GetWindowHandle()
     {
         return window;
@@ -16,6 +26,30 @@ namespace AVE
     SDL_Renderer* Window::GetRendererHandle()
     {
         return renderer;
+    }
+    Texture* Window::LoadTexture(const char* path)
+    {
+        Texture* newTex = new Texture(path, this);
+        if(!newTex->texture)
+        {
+            delete newTex;
+            return nullptr;
+        }
+        return newTex;
+    }
+    void Window::DeleteTexture(Texture* tex)
+    {
+        delete tex;
+    }
+    void Window::BindActive(Active* active)
+    {
+        active->owner = this;
+        active->iter = myActives.insert(myActives.begin(), active);
+    }
+    void Window::UnbindActive(Active* active)
+    {
+        active->owner = nullptr;
+        myActives.erase(active->iter);
     }
     bool Window::Open(const char* title, int x, int y, int w, int h)
     {
@@ -27,6 +61,7 @@ namespace AVE
 
         if((isOpen = (Init() && (window = SDL_CreateWindow(title, x, y, w, h, SDL_WINDOW_RESIZABLE)) && (renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC)))))
         {
+            bgColor = {255,255,255};
             SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
             IDtoWindow.insert({SDL_GetWindowID(window), *this});
             std::clog << "Opened window " << this << std::endl;
@@ -37,7 +72,17 @@ namespace AVE
     }
     void Window::Close()
     {
-        shouldMainLoopStop = true;
+        StopMainLoop();
+        for(std::list<Texture*>::iterator iter = myTextures.begin(); iter != myTextures.end(); )
+        {
+            std::list<Texture*>::iterator curr = iter++;
+            delete (*curr);
+        }
+        for(std::list<Active*>::iterator iter = myActives.begin(); iter != myActives.end(); )
+        {
+            std::list<Active*>::iterator curr = iter++;
+            delete (*curr);
+        }
         IDtoWindow.erase(SDL_GetWindowID(window));
         SDL_DestroyRenderer(renderer);
         SDL_DestroyWindow(window);
@@ -68,6 +113,19 @@ namespace AVE
     {
         SDL_GetWindowSize(window, w, h);
     }
+    uint8_t Window::GetLClicks()
+    {
+        return mouseClickL;
+    }
+    void Window::GetMousePos(int* x, int* y)
+    {
+        (*x) = mouseX;
+        (*y) = mouseY;
+    }
+    void Window::SetBackgroundColor(RGB color)
+    {
+        bgColor = color;
+    }
     void Window::SetFullscreen()
     {
         SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
@@ -82,6 +140,7 @@ namespace AVE
     }
     void Window::HandleEvents()
     {
+        mouseClickL = 0;
         while(!events.empty())
         {
             SDL_Event event = events.back();
@@ -94,59 +153,22 @@ namespace AVE
                     OnCloseAttempt();
                 }
                 break;
-                ///TODO - Keyboard and mouse state storing
-            }
-        }
-
-    }
-    bool Window::PollEvents()
-    {
-        SDL_Event event;
-        if(!shareEvents) while(SDL_PollEvent(&event))
-        {
-            switch(event.type)
-            {
-            case SDL_KEYDOWN:
-            case SDL_KEYUP:
-            case SDL_WINDOWEVENT:
             case SDL_MOUSEBUTTONDOWN:
-            case SDL_MOUSEBUTTONUP:
-            case SDL_MOUSEWHEEL:
-            case SDL_MOUSEMOTION:
-                if(int ID = event.window.windowID)
-                {
-                    auto windowIter = IDtoWindow.find(ID);
-                    if(windowIter != IDtoWindow.end())
-                        windowIter->second.events.push(event);
-                }
-                break;
+                if(event.button.button == SDL_BUTTON_LEFT)
+                    mouseClickL = event.button.clicks;
             }
         }
-        else while(SDL_PollEvent(&event))
-        {
-            switch(event.type)
-            {
-            case SDL_KEYDOWN:
-            case SDL_KEYUP:
-            case SDL_WINDOWEVENT:
-            case SDL_MOUSEBUTTONDOWN:
-            case SDL_MOUSEBUTTONUP:
-            case SDL_MOUSEWHEEL:
-            case SDL_MOUSEMOTION:
-                for(std::pair<uint32_t, Window&> p : IDtoWindow)
-                {
-                    p.second.events.push(event);
-                }
-                break;
-            }
-        }
-        return true;
+        if(Event::getGlobalMousePos) SDL_GetGlobalMouseState(&mouseX, &mouseY);
+        else SDL_GetMouseState(&mouseX, &mouseY);;
     }
-    void Window::Draw() ///TODO - rendering
+    void Window::Draw()
     {
+        for(Texture* texture : myTextures)
+            for(Sprite* sprite : texture->mySprites)
+                sprite->Draw();
         SDL_RenderPresent(renderer);
 
-        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 0);
+        SDL_SetRenderDrawColor(renderer, bgColor.R, bgColor.G, bgColor.B, 255);
         SDL_RenderClear(renderer);
         return;
     }
@@ -156,9 +178,10 @@ namespace AVE
             return;
         shouldMainLoopStop = false;
         std::clog << "Started main window loop of window " << this << std::endl;
+        OnStart();
         while(!shouldMainLoopStop)
         {
-            OnUpdate();
+            Update();
         }
         mainLoopLock.unlock();
         std::clog << "Stopped main window loop of window " << this << std::endl;
@@ -191,28 +214,21 @@ namespace AVE
             std::clog << ", " << windows[i];
         std::clog << std::endl;
         bool someOpen = true;
-        if(OnSharedUpdate) while(!shouldSharedMainLoopStop && someOpen)
+        for(uint32_t i = 0; i < windowCount; i++)
+            if(windows[i]->IsOpen())
+                windows[i]->OnStart();
+        while(!shouldSharedMainLoopStop && someOpen)
         {
             someOpen = false;
-            OnSharedUpdate();
+            if(OnSharedUpdate) OnSharedUpdate();
             for(uint32_t i = 0; i < windowCount; i++)
             {
                 if(windows[i]->IsOpen())
                 {
                     someOpen = true;
-                    windows[i]->OnUpdate();
+                    windows[i]->Update();
                 }
             }
-        }
-        else while(!shouldSharedMainLoopStop && someOpen)
-        {
-            someOpen = false;
-            for(uint32_t i = 0; i < windowCount; i++)
-                if(windows[i]->IsOpen())
-                {
-                    someOpen = true;
-                    windows[i]->OnUpdate();
-                }
         }
 
         for(uint32_t i = 0; i < windowCount; i++)
