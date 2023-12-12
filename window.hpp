@@ -5,11 +5,16 @@
 #include <queue>
 #include <list>
 #include "common.hpp"
+#include "event.hpp"
 namespace AVE
 {
     class Texture;
     class Window
     {
+        friend void Active::BindWindow(Window* window);
+        friend void Active::UnbindWindow();
+        friend void Clickable::BindWindow(Window* window);
+        friend void Clickable::UnbindWindow();
         friend class Texture;
         friend class Event;
         SDL_Window* window = nullptr;
@@ -25,13 +30,16 @@ namespace AVE
         static std::unordered_map<uint32_t, Window&> IDtoWindow;
         std::list <Texture*> myTextures;
         std::list <Active*> myActives;
+        std::list <Clickable*> myClickables;
         RGB bgColor;
         int mouseX = 0, mouseY = 0;
         void Update();
+        void _OnClick();
     protected:
-        virtual void OnStart() = 0;
-        virtual void OnUpdate() = 0;
+        virtual void OnStart(){};
+        virtual void OnUpdate(){};
         virtual void OnCloseAttempt(){Close();};
+        virtual void OnClick(int mX, int mY, uint8_t clicks){};
     public:
         ~Window();
 
@@ -40,9 +48,6 @@ namespace AVE
 
         Texture* LoadTexture(const char* path);
         void DeleteTexture(Texture* tex);
-
-        void BindActive(Active* active);
-        void UnbindActive(Active* active);
 
         bool Open(const char* title, int x, int y, int w, int h);
         void Close();

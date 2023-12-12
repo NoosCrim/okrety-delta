@@ -14,6 +14,17 @@ namespace AVE
     }
     void Window::Update()
     {
+        HandleEvents();
+        if(mouseClickL)
+        {
+            for(Clickable* clickable : myClickables)
+                if(clickable->OnClick(mouseX, mouseY, mouseClickL))
+                {
+                    mouseClickL = 0;
+                    break;
+                }
+            OnClick(mouseX, mouseY, mouseClickL);
+        }
         for(Active* active : myActives)
             active->OnUpdate();
         Draw();
@@ -40,16 +51,6 @@ namespace AVE
     void Window::DeleteTexture(Texture* tex)
     {
         delete tex;
-    }
-    void Window::BindActive(Active* active)
-    {
-        active->owner = this;
-        active->iter = myActives.insert(myActives.begin(), active);
-    }
-    void Window::UnbindActive(Active* active)
-    {
-        active->owner = nullptr;
-        myActives.erase(active->iter);
     }
     bool Window::Open(const char* title, int x, int y, int w, int h)
     {
@@ -159,7 +160,7 @@ namespace AVE
             }
         }
         if(Event::getGlobalMousePos) SDL_GetGlobalMouseState(&mouseX, &mouseY);
-        else SDL_GetMouseState(&mouseX, &mouseY);;
+        else SDL_GetMouseState(&mouseX, &mouseY);
     }
     void Window::Draw()
     {
@@ -181,6 +182,7 @@ namespace AVE
         OnStart();
         while(!shouldMainLoopStop)
         {
+            Event::PollEvents();
             Update();
         }
         mainLoopLock.unlock();
@@ -220,7 +222,8 @@ namespace AVE
         while(!shouldSharedMainLoopStop && someOpen)
         {
             someOpen = false;
-            if(OnSharedUpdate) OnSharedUpdate();
+            Event::PollEvents();
+
             for(uint32_t i = 0; i < windowCount; i++)
             {
                 if(windows[i]->IsOpen())
@@ -229,6 +232,7 @@ namespace AVE
                     windows[i]->Update();
                 }
             }
+            if(OnSharedUpdate) OnSharedUpdate();
         }
 
         for(uint32_t i = 0; i < windowCount; i++)

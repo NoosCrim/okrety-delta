@@ -18,5 +18,7 @@ namespace AVE
         virtual ~Texture();
         void BindSprite(Sprite* sprite);
         void UnbindSprite(Sprite* sprite);
+    public:
+        Window* GetOwner() { return owner; }
     };
 }

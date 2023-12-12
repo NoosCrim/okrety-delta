@@ -36,7 +36,6 @@ namespace AVE
     {
         sprite->iter = mySprites.insert(mySprites.begin(), sprite);
         sprite->texture = this;
-        owner->BindActive(sprite);
     }
     void Texture::UnbindSprite(Sprite* sprite)
     {

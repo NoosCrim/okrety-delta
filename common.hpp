@@ -11,12 +11,32 @@ namespace AVE
         std::list<Active*>::iterator iter;
         bool started = false;
         void Update();
+        void BindWindow(Window* window);
+        void UnbindWindow();
     protected:
-        virtual void OnStart(){};
-        virtual void OnUpdate(){};
-        Active(){}; // protected because it should never be created non-dynamically. It and it's children should always be created using new, and not used unitl bound to Window object
-    public:
+        virtual void OnStart()=0;
+        virtual void OnUpdate()=0;
+        Active(Window* window); // protected because it should never be created non-dynamically.
         virtual ~Active();
+    public:
+        Active(const Active&) = delete;
+        Active(Active&) = delete;
+        Window* GetWindow() { return owner; }
+    };
+    class Clickable
+    {
+        friend class Window;
+        Window* owner;
+        std::list<Clickable*>::iterator iter;
+        void BindWindow(Window* window);
+        void UnbindWindow();
+    protected:
+        virtual ~Clickable();
+        virtual bool OnClick(int mX, int mY, uint8_t clicks) = 0; // returns true if no clicks under it should be checked
+        Clickable(Window* window);
+    public:
+        Clickable(const Clickable&) = delete;
+        Clickable(Clickable&) = delete;
     };
     struct RGB
     {
