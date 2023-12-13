@@ -7,7 +7,7 @@ namespace AVE
     class Sprite : public Active
     {
         friend class Texture;
-        std::list<Sprite*>::iterator iter;
+        std::list<Sprite*>::iterator texIter, winIter;
         Texture *texture;
     protected:
         //Sprite should always be created using new, and then bound to Texture, so it can later be destroyed

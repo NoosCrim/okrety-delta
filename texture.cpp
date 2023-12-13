@@ -34,11 +34,13 @@ namespace AVE
     }
     void Texture::BindSprite(Sprite* sprite)
     {
-        sprite->iter = mySprites.insert(mySprites.begin(), sprite);
+        sprite->texIter = mySprites.insert(mySprites.rbegin().base(), sprite);
         sprite->texture = this;
+        sprite->winIter = owner->mySprites.insert(owner->mySprites.rbegin().base(), sprite);
     }
     void Texture::UnbindSprite(Sprite* sprite)
     {
-        mySprites.erase(sprite->iter);
+        mySprites.erase(sprite->texIter);
+        owner->mySprites.erase(sprite->winIter);
     }
 }

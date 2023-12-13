@@ -164,9 +164,8 @@ namespace AVE
     }
     void Window::Draw()
     {
-        for(Texture* texture : myTextures)
-            for(Sprite* sprite : texture->mySprites)
-                sprite->Draw();
+        for(Sprite* sprite : mySprites)
+            sprite->Draw();
         SDL_RenderPresent(renderer);
 
         SDL_SetRenderDrawColor(renderer, bgColor.R, bgColor.G, bgColor.B, 255);

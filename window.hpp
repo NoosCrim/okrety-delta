@@ -9,6 +9,7 @@
 namespace AVE
 {
     class Texture;
+    class Sprite;
     class Window
     {
         friend void Active::BindWindow(Window* window);
@@ -30,6 +31,7 @@ namespace AVE
         static std::unordered_map<uint32_t, Window&> IDtoWindow;
         std::list <Texture*> myTextures;
         std::list <Active*> myActives;
+        std::list <Sprite*> mySprites;
         std::list <Clickable*> myClickables;
         RGB bgColor;
         int mouseX = 0, mouseY = 0;
