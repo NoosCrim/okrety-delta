@@ -17,12 +17,14 @@ namespace AVE
     public:
         virtual ~Sprite();
         static Sprite* CreateSprite(Texture* tex, int sX = 0, int sY = 0, int sW = 0, int sH = 0, float x = 0, float y = 0, float w = 0, float h = 0, float angle = 0, bool flipH = 0, bool flipV = 0);
+        static Sprite* CreateSprite(const Sprite* other);
         int sX = 0, sY = 0, sW = 0, sH = 0;
         float x = 0.0f, y = 0.0f, w = 0.0f, h = 0.0f;
         float angle;
         bool flipH, flipV;
         bool visible = true;
         void Draw();
-        Texture* GetTexture(){return texture;};
+        Texture* GetTexture() { return texture; };
+        Window* GetWindow();
     };
 }

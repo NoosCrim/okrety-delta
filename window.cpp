@@ -60,7 +60,7 @@ namespace AVE
             return false;
         }
 
-        if((isOpen = (Init() && (window = SDL_CreateWindow(title, x, y, w, h, SDL_WINDOW_RESIZABLE)) && (renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC)))))
+        if((isOpen = (Init() && (window = SDL_CreateWindow(title, x, y, w, h, 0)) && (renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC)))))
         {
             bgColor = {255,255,255};
             SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
