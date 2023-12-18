@@ -31,6 +31,8 @@
 		<Unit filename="common.hpp" />
 		<Unit filename="event.cpp" />
 		<Unit filename="event.hpp" />
+		<Unit filename="gameCommon.cpp" />
+		<Unit filename="gameCommon.hpp" />
 		<Unit filename="gameGUI.hpp" />
 		<Unit filename="main.cpp" />
 		<Unit filename="sprite.cpp" />
