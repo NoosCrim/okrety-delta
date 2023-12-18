@@ -1,67 +1,34 @@
-#include <iostream>
-#include "AVE.hpp"
-#include <SDL2/SDL.h>
-using namespace std;
-class mWindow : public AVE::Window
+#include "gameGUI.hpp"
+#include <cstdio>
+int main(int argc, const char *argv[])
 {
-public:
-    AVE::Texture texture;
-    AVE::Sprite sprite;
-    float xV = 2.5, yV = 2.5;
-    float xP = 0.0, yP = 0.0;
-protected:
-    virtual void OnCloseAttempt()
+    int windowWidth = 1280, windowHeight = 960;
+    int boardWidth = 10, boardHeight = 10;
+    const char* targetIP;
+    unsigned int port;
+    bool runServer;
+    for(int i = 1; i < argc; i++)
     {
-        Close();
+        if(strcmp(argv[i], "-Ws") == 0)
+        {
+            windowWidth = std::stoi(argv[i+1]);
+            windowHeight = std::stoi(argv[i+2]);
+            i+=2;
+        }
+        else if(strcmp(argv[i], "-h") == 0)
+            runServer = true;
+        else if(strcmp(argv[i], "-Bs") == 0)
+        {
+            boardWidth = std::stoi(argv[i+1]);
+            boardHeight = std::stoi(argv[i+2]);
+            i+=2;
+        }
     }
-    virtual void OnUpdate()
-    {
-        PollEvents();
-        HandleEvents();
-        int wW, wH, wX, wY;
-        GetSize(&wW, &wH);
-        GetPos(&wX, &wY);
-        if((xP + sprite.drawW) >= wW + wX && xV > 0)
-        {
-            xV = -xV;
-            xP = wW + wX - sprite.drawW;
-        }
-        else if(xP <= wX && xV < 0)
-        {
-            xV = -xV;
-            xP = wX;
-        }
-        if((yP + sprite.drawH) >= wH + wY && yV > 0)
-        {
-            yV = -yV;
-            yP = wH + wY - sprite.drawH;
-        }
-        else if(yP <= wY && yV < 0)
-        {
-            yV = -yV;
-            yP = wY;
-        }
-        xP += xV;
-        yP += yV;
-        sprite.drawX = xP - wX;
-        sprite.drawY = yP - wY;
-        sprite.Draw(this, false, false);
-        Draw();
-    }
-};
-int main()
-{
     AVE::Init();
-    mWindow window;
-
+    mWindow window(boardWidth, boardHeight);
+    AVE::Event::getGlobalMousePos = false;
     AVE::Window::SetShareEvents(true);
-    window.Open("title", 0, 0, 640, 480);
-    window.texture.LoadTexture("circle_tex.png", &window);
-    window.sprite.texture = &window.texture;
-    window.sprite.drawW = 300;
-    window.sprite.drawH = 300;
-    window.sprite.sampleH = 1024;
-    window.sprite.sampleW = 1024;
+    window.Open("title", 0, 0, windowWidth, windowHeight);
     window.StartMainLoop();
     AVE::DeInit();
     return 0;

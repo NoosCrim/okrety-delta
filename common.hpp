@@ -28,6 +28,7 @@ namespace AVE
         friend class Window;
         Window* owner;
         std::list<Clickable*>::iterator iter;
+        bool enabled = true;
         void BindWindow(Window* window);
         void UnbindWindow();
     protected:

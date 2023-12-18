@@ -18,7 +18,7 @@ namespace AVE
         if(mouseClickL)
         {
             for(Clickable* clickable : myClickables)
-                if(clickable->OnClick(mouseX, mouseY, mouseClickL))
+                if(clickable->enabled && clickable->OnClick(mouseX, mouseY, mouseClickL))
                 {
                     mouseClickL = 0;
                     break;
