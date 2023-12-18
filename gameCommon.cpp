@@ -1,5 +1,3 @@
-#pragma once
-
 #include "gameCommon.hpp"
 
 namespace Game {
@@ -18,4 +16,4 @@ namespace Game {
         return false;
     }
 
-} 
+}
