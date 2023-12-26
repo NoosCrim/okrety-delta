@@ -1,0 +1,18 @@
+# depslib dependency file v1.0
+1703618426 source:/home/milosz/code/testNetworking/server.cpp
+	<iostream>
+	<asio.hpp>
+	<vector>
+	<thread>
+	<atomic>
+	<chrono>
+	"thsqueue.hpp"
+	"logika.hpp"
+
+1703599595 /home/milosz/code/testNetworking/thsqueue.hpp
+	<queue>
+	<mutex>
+
+1703617000 /home/milosz/code/testNetworking/logika.hpp
+	<string>
+
