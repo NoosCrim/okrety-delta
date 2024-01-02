@@ -13,7 +13,7 @@ namespace Client{
     {
         for(unsigned int i=0;i<ship.squares.size();i++)  //pętla po wszytskich elementach statku
         {
-            if(ship.squares[i].x > width || ship.squares[i].x < 0  ||  ship.squares[i].y > height || ship.squares[i].y < 0)  //Jeżeli któryś z elementów statku nie mieści się na planszy
+            if(ship.squares[i].x >= width || ship.squares[i].x < 0  ||  ship.squares[i].y >= height || ship.squares[i].y < 0)  //Jeżeli któryś z elementów statku nie mieści się na planszy
                 return false;   //zwróc false
 
 
@@ -61,7 +61,7 @@ namespace Client{
 
     bool EnemyBoard::Shoot(Coords pos)
     {
-        if(pos.x > width || pos.x < 0  ||  pos.y > height || pos.y < 0) //Jeżeli pos jest poza planszą
+        if(pos.x >= width || pos.x < 0  ||  pos.y >= height || pos.y < 0) //Jeżeli pos jest poza planszą
         {
             return false;   //zwróć false
         }
