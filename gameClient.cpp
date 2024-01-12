@@ -1,4 +1,4 @@
-#include "clientGame.hpp"
+#include "gameClient.hpp"
 
 namespace Game{
 namespace Client{
