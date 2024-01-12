@@ -7,13 +7,13 @@ from tkinter import messagebox, Label, Entry, simpledialog
 window_width = 960
 window_height = 540
 ip_address = "0"
-port = "69"
+port = "2137"
 
 def launch():
-    print(launch_arguments)
+    #print(launch_arguments)
     try:
         if platform.system() == "Windows":
-            messagebox.showinfo("Windows!", "Uruchamiam grę na systemie Windows.")
+            #messagebox.showinfo("Windows!", "Uruchamiam grę na systemie Windows.")
             p=subprocess.run(["okrety-delta.exe"] + launch_arguments, shell=True, check=False)
             returnProcess = p.returncode
             if(returnProcess==1):
@@ -22,7 +22,7 @@ def launch():
                 messagebox.showerror("Błąd", "Nie udało się połączyć")
 
         else:
-            messagebox.showinfo("Linux!", "Uruchamiam grę na systemie Linux.")
+            #messagebox.showinfo("Linux!", "Uruchamiam grę na systemie Linux.")
             p=subprocess.run(["./okrety-delta"] + launch_arguments, shell=True, check=False)
             returnProcess = p.returncode
             if(returnProcess==1):
@@ -34,7 +34,12 @@ def launch():
         messagebox.showerror("Błąd", f"Wystąpił błąd podczas uruchamiania gry: {e}")
 
 def show_help():
-    messagebox.showinfo("Pomoc", "Tu pojawi się pomoc dotycząca gry.")
+    messagebox.showinfo("Pomoc", "Gra w statki to klasyczna rozgrywka strategiczna, w której gracze rozmieszczają "
+                                 "swoje statki na planszy i starają się trafić statki przeciwnika, wygrywając tę grę "
+                                 "zręcznościową i logiczną.\n\nLauncher gry oferuje kilka opcji, umożliwiając "
+                                 "dostosowanie doświadczenia rozgrywki. Możesz zmieniać rozmiar okna gry, przełączać "
+                                 "między trybem pełnoekranowym a oknem, a także dostosowywać inne ustawienia, takie "
+                                 "jak adres IP hosta dla gry wieloosobowej.")
 
 def toggle_fullscreen(arguments):
     # Toggle pełnego ekranu
@@ -50,19 +55,21 @@ def toggle_buttons():
     start_button.pack_forget()
     help_button.pack_forget()
     options_button.pack_forget()
+    exit_button.pack_forget()
 
     back_button.pack(side=tk.LEFT, padx=10)
 
-    fullscreen_frame.pack(side=tk.LEFT, padx=30)
+    fullscreen_frame.pack(side=tk.LEFT, padx=25)
 
 def back_to_menu():
     # Przywróć przyciski uruchamiania i pomocy, ukryj przyciski powrotu i pełnego ekranu
     back_button.pack_forget()
     fullscreen_frame.pack_forget()
 
-    start_button.pack(pady=10)
-    options_button.pack(pady=10)
-    help_button.pack(pady=10)
+    start_button.pack(pady=20)
+    options_button.pack(pady=20)
+    help_button.pack(pady=20)
+    exit_button.pack(pady=20)
 
 def set_background():
     label1.config(image=bg)
@@ -91,7 +98,7 @@ def get_ip_address():
     launch_arguments.remove("-H")
     launch_arguments.remove(str(ip_address))
 
-    ip_address = simpledialog.askstring("Adres IP", "Podaj adres IP hosta:")
+    ip_address = simpledialog.askstring("IP", "Podaj adres IP hosta:")
     launch_arguments.append("-H")
     launch_arguments.append(ip_address)
 
@@ -107,6 +114,9 @@ def is_valid_ip(ip):
         return True
     except ipaddress.AddressValueError:
         return False
+
+def exit():
+    root.destroy()
 
 if __name__ == "__main__":
     # Tworzenie głównego okna
@@ -125,10 +135,12 @@ if __name__ == "__main__":
     # Minimalne rozmiary okna
     root.minsize(width=320, height=280)
 
-    # Ustawianie tła
+    # Ustawianie tła i ikony
     label1 = Label(root)
     bg = tk.PhotoImage(file=r"assets/launcherBg.png")
     set_background()
+    icon = tk.PhotoImage(file=r"assets/skullMarker.png")
+    root.tk.call('wm', 'iconphoto', root._w, icon)
 
     launch_arguments = ["-Ws", width_var.get(), height_var.get()]
 
@@ -141,17 +153,21 @@ if __name__ == "__main__":
     # Nie mam dostępu do wielkości okna na bieżąco więc nawet nie próbuję tego dobrze padować
     # Przyciski do uruchamiania gry, pomocy i opcji
     start_button = tk.Button(root, text="Uruchom grę", command=lambda: (get_ip_address()), height=3, width=15)
-    start_button.pack(pady=10)
+    start_button.pack(pady=20)
 
     options_button = tk.Button(root, text="Opcje", command=toggle_buttons, height=3, width=15)
-    options_button.pack(pady=10)
+    options_button.pack(pady=20)
 
     help_button = tk.Button(root, text="Pomoc", command=show_help, height=3, width=15)
-    help_button.pack(pady=10)
+    help_button.pack(pady=20)
+
+    exit_button = tk.Button(root, text="Wyjście", command=exit, height=3, width=15)
+    exit_button.pack(pady=20)
 
     change_button_color_hex(start_button, "#67B7D1")
     change_button_color_hex(options_button, "#67B7D1")
     change_button_color_hex(help_button, "#67B7D1")
+    change_button_color_hex(exit_button, "#67B7D1")
 
     # Przyciski powrotu i pełnego ekranu (na razie ukryte)
     back_button = tk.Button(root, text="Powrót", command=back_to_menu, height=3, width=15)
