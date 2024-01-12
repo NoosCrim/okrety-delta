@@ -44,6 +44,14 @@
 		<Unit filename="common.hpp" />
 		<Unit filename="event.cpp" />
 		<Unit filename="event.hpp" />
+		<Unit filename="gameClient.cpp">
+			<Option target="Debug" />
+			<Option target="Client" />
+		</Unit>
+		<Unit filename="gameClient.hpp">
+			<Option target="Debug" />
+			<Option target="Client" />
+		</Unit>
 		<Unit filename="gameCommon.cpp" />
 		<Unit filename="gameCommon.hpp" />
 		<Unit filename="gameGUI.hpp" />
