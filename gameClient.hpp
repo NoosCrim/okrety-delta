@@ -22,6 +22,10 @@ class PlayerBoard   ///klasa
     //metody
         bool AddShip(const Ship& ship);
         bool TakeShot(Coords pos);
+
+    private:
+    //dfs
+        int dfs(int squares, bool visited[], const Ship &ship, int ile);
 };
 
 
@@ -40,7 +44,7 @@ class EnemyBoard    ///klasa abstrakcyjna
         virtual ~EnemyBoard(){};
 
     //metody
-        virtual bool OnShot(Coords pos) = 0;    //Metoda abstrakcyjna
+        virtual bool OnShot(Coords pos){return true;};    //Metoda abstrakcyjna
         bool Shoot(Coords pos);
 };
 
