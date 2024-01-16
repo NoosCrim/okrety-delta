@@ -98,8 +98,12 @@ private:
             std::lock_guard<std::mutex> lock(sessionsMutex_);
             // Remove this session from the list
             auto self(shared_from_this());
-            std::clog << "Disconected session with id: " << self->socket_.remote_endpoint() << std::endl;
             sessions_.erase(std::remove(sessions_.begin(), sessions_.end(), shared_from_this()), sessions_.end());
+
+            for (auto& session : sessions_) {
+                std::clog << "Writing to socket with endpoit: " << session->socket_.remote_endpoint() << std::endl;
+                session->sendMessage(Messanger::wyszedlGracz());
+            }
             // Nie zmieniam ilosci connectow bo w trakcie gry nie mozna sie polaczyc od tego jest lobby
         }
     }
@@ -116,9 +120,22 @@ public:
     Server(asio::io_context& ioContext, std::size_t port, int startingPlayerIndex)
         : acceptor_(ioContext, tcp::endpoint(tcp::v4(), port)),
           socket_(ioContext),
-          sessionsMutex_() {
+          sessionsMutex_(),
+          timer_(ioContext) {
         startingPlayerIndex_ = startingPlayerIndex;
         doAccept();
+    }
+
+    void zmienTure()
+    {
+        std::lock_guard<std::mutex> lock(sessionsMutex_);
+        timer_.cancel();
+        startingPlayerIndex_ = startingPlayerIndex_%MAX_CONNECTIONS + 1;
+
+        for (auto& session : sessions_) {
+            session->sendMessage(Messanger::startTury(startingPlayerIndex_));
+        }
+        startTimer();
     }
 
 private:
@@ -140,6 +157,8 @@ private:
                             for (auto& session : sessions_) {
                                 session->startReading();
                             }
+                            //zaczynam liczyc czas dla pierwszego gracza
+                            startTimer();
                         }
                     }
                     else
@@ -154,6 +173,18 @@ private:
             });
     }
 
+    void startTimer() {
+        timer_.expires_after(std::chrono::seconds(DEFAULT_TURN_TIME)); // Ustaw czas w sekundach
+        timer_.async_wait([this](const asio::error_code& ec) {
+                if (!ec) {
+                    std::clog << "Timer callback called!" << std::endl;
+                    zmienTure();
+                } else {
+                    std::clog << "Timer callback error: " << ec.message() << std::endl;
+                }
+            });
+    }
+
     tcp::acceptor acceptor_;
     tcp::socket socket_;
     std::vector<std::shared_ptr<Session>> sessions_;
@@ -161,6 +192,7 @@ private:
     std::mutex conectionMutex_;
     int connections = 0;
     int startingPlayerIndex_;
+    asio::steady_timer timer_;
 };
 
 //PS wypadaloby zmienic wystapienia int'a na inta o stalej wielkosci nie zaleznie od architektury np __int32

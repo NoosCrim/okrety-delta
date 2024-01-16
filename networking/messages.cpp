@@ -4,22 +4,24 @@ std::map<MessageCode, std::string> messageCodes = {
     {MessageCode::trafiony, "MsgCode: HIT"},
     {MessageCode::niePoprawnyStrzal, "MsgCode: FFIRE"},
     {MessageCode::poprawnyStrzal, "MsgCode: TFIRE"},
-    {MessageCode::koniecTury, "MsgCode: EOT"},
+    {MessageCode::startTury, "MsgCode: SOT"},
     {MessageCode::przegranaGracza, "MsgCode: LOSE"},
     {MessageCode::zacznij, "MsgCode: START"},
     {MessageCode::nieTrafiony, "MsgCode: NHIT"},
-    {MessageCode::ustawSwojNumer, "MsgCode: SET"}
+    {MessageCode::ustawSwojNumer, "MsgCode: SET"},
+    {MessageCode::wyszedlGracz, "MsgCode: DISC"}
 };
 std::map<std::string, MessageCode> messageCodesOdwrot = {
     {"MsgCode: FIRE", MessageCode::strzal},
     {"MsgCode: HIT", MessageCode::trafiony},
     {"MsgCode: FFIRE", MessageCode::niePoprawnyStrzal},
     {"MsgCode: TFIRE", MessageCode::poprawnyStrzal},
-    {"MsgCode: EOT", MessageCode::koniecTury},
+    {"MsgCode: SOT", MessageCode::startTury},
     {"MsgCode: LOSE", MessageCode::przegranaGracza},
     {"MsgCode: START", MessageCode::zacznij},
     {"MsgCode: NHIT", MessageCode::nieTrafiony},
-    {"MsgCode: SET", MessageCode::ustawSwojNumer}
+    {"MsgCode: SET", MessageCode::ustawSwojNumer},
+    {"MsgCode: DISC", MessageCode::wyszedlGracz}
 };
 namespace Messanger
 {
@@ -43,9 +45,9 @@ namespace Messanger
     {
         return messageCodes[MessageCode::poprawnyStrzal] + " " + std::to_string(x) + " " + std::to_string(y) + " " + std::to_string(player) + "\n";
     }
-    std::string koniecTury(int player)
+    std::string startTury(int player)
     {
-        return messageCodes[MessageCode::koniecTury] + " " + std::to_string(player) + "\n";
+        return messageCodes[MessageCode::startTury] + " " + std::to_string(player) + "\n";
     }
     std::string przegranaGracza(int player)
     {
@@ -58,6 +60,10 @@ namespace Messanger
     std::string ustawSwojNumer(int player)
     {
         return messageCodes[MessageCode::ustawSwojNumer] + " " + std::to_string(player) + "\n";
+    }
+    std::string wyszedlGracz()
+    {
+        return messageCodes[MessageCode::wyszedlGracz] + "\n";
     }
     std::string helloServer(const std::string& message)
     {

@@ -10,11 +10,12 @@ enum class MessageCode {
     trafiony = 1,
     niePoprawnyStrzal = 2,
     poprawnyStrzal = 3,
-    koniecTury = 4,
+    startTury = 4,
     przegranaGracza = 5,
     zacznij = 6,
     nieTrafiony = 7,
-    ustawSwojNumer = 8
+    ustawSwojNumer = 8,
+    wyszedlGracz = 9
 };
 
 extern std::map<MessageCode, std::string> messageCodes;
@@ -38,7 +39,7 @@ namespace Messanger {
     std::string poprawnyStrzal(int x, int y, int player);
 
     //tworzy wiadomosc o tresci: mowi o numerze gracza ktoremu skonczyla sie tura
-    std::string koniecTury(int player);
+    std::string startTury(int player);
 
     //tworzy wiadomosc o tresci: mowi o numerze gracza ktory przegral
     std::string przegranaGracza(int player);
@@ -48,6 +49,9 @@ namespace Messanger {
 
     //tworzy wiadomosc o tresci: mowi graczu o tym jaki numer przypisal mu server
     std::string ustawSwojNumer(int player);
+
+    //tworzy wiadomosc o trescji: mowi o tym ze wyszedl gracz i jego numer
+    std::string wyszedlGracz();
 
 
     //do debugowania
