@@ -18,16 +18,23 @@ bool AsyncClient::start()
         fire(123, 456, 789);
 
         // Run the io_context to keep the program alive
-        io_context_.run();
         return true;
    } catch (std::exception& e) {
         std::clog << "Connection refused: " << e.what() << std::endl;
         return false;
     }
 }
+void AsyncClient::run()
+{
+    io_context_.run();
+}
 void AsyncClient::fire(int x, int y, int player)
 {
     write(Messanger::strzal(x,y,player));
+}
+void AsyncClient::fire(int x, int y)
+{
+    write(Messanger::strzal(x,y,playerNumber_));
 }
 void AsyncClient::trafil(int x, int y, int player)
 {
@@ -108,6 +115,21 @@ void AsyncClient::handleRead()
             isMyTurn_ = true;
             std::clog << "Ustawilem isMyTurn_ na: " << isMyTurn_ << std::endl;
             break;
+
+        case MessageCode::wyszedlGracz:
+            std::clog << "Wyszedl przeciwnik wiec koncze dzialanie" << std::endl;
+            socket_.close();
+            io_context_.stop();
+            break;
+
+        case MessageCode::startTury:
+            is >> player_;
+            incominPlayerNumber_ = stoi(player_);
+            if (incominPlayerNumber_ == playerNumber_) isMyTurn_ = true;
+            else isMyTurn_ = false;
+            std::clog << "Ustawilem isMyTurn_ na: " << isMyTurn_ << " bo ture zaczyna teraz gracz nr: " << incominPlayerNumber_ << std::endl;
+            break;
+
 
         default:
             std::clog << "jestem w default no troche mnie tu nie powinno byc niby hmmm" << std::endl;

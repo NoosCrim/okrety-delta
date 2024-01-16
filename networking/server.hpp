@@ -5,6 +5,8 @@
 #include <vector>
 #include <memory>
 #include <mutex>
+#include <thread>
+#include <chrono>
 #include "messages.hpp"
 
 int turnTime = DEFAULT_TURN_TIME;
@@ -13,8 +15,8 @@ using asio::ip::tcp;
 
 class Session : public std::enable_shared_from_this<Session> {
 public:
-    Session(tcp::socket socket, std::vector<std::shared_ptr<Session>>& sessions, std::mutex& sessionsMutex)
-        : socket_(std::move(socket)), sessions_(sessions), sessionsMutex_(sessionsMutex) { }
+    Session(tcp::socket socket, std::vector<std::shared_ptr<Session>>& sessions, std::mutex& sessionsMutex, int playerNumber, asio::io_context& ioContext)
+        : socket_(std::move(socket)), sessions_(sessions), sessionsMutex_(sessionsMutex), myPlayerNumber(playerNumber), ioContext_(ioContext) { }
 
     void start() {
         {
@@ -52,29 +54,49 @@ private:
             });
     }
 
-    void handleRead() {
-        //uwaga pierwsza wiadomosc dla kazdego zostanie zignorowana (usunieta i tak to bez sensu wywalic we wlasciwej rozgrywce)
-        //usuwam z inputbuf wiadomosci wyslane przed rozpoczeciem gry
-        if(isStart) { std::clog << "Clearing inputbuf " << std::endl; isStart = false; inputBuffer_.consume(inputBuffer_.size()); return; }
+    void sendToAll(const std::string& message)
+    {
+         std::lock_guard<std::mutex> lock(sessionsMutex_);
+        // Broadcast the received message to all connected users
+        for (auto& session : sessions_) {
+                std::clog << "Writing to socket with endpoit: " << session->socket_.remote_endpoint() << std::endl;
+                session->sendMessage(message);
+        }
+    }
 
+    void handleRead() {
         //Wiadomosc jest w formie MsgCode: (Code) reszta danych
         std::string msgCode1; std::string msgCode2;
         std::string message;
         std::istream is(&inputBuffer_);
         is >> msgCode1; is >> msgCode2;
-        std::getline(is, message);
-        message = msgCode1 + " " + msgCode2 + message;
-        std::clog << msgCode1 << " " << msgCode2 << std::endl;
-        std::clog << "Incoming message: " << message << std::endl;
 
-        {
-            std::lock_guard<std::mutex> lock(sessionsMutex_);
-            // Broadcast the received message to all connected users
-            for (auto& session : sessions_) {
-                    std::clog << "Writing to socket with endpoit: " << session->socket_.remote_endpoint() << std::endl;
-                    session->sendMessage(message);
-            }
+        MessageCode msgCode = messageCodesOdwrot[msgCode1 + " " + msgCode2]; std::string player_ = ""; std::string x = ""; std::string y = ""; int incominPlayerNumber_ = -1; int X; int Y; bool ignore = false;
+        switch (msgCode) {
+            case MessageCode::strzal:
+                is >> x >> y >> player_;
+                X = stoi(x);
+                Y = stoi(y);
+                incominPlayerNumber_ = stoi(player_);
+                if(incominPlayerNumber_ == myPlayerNumber)
+                {
+                    std::clog << "Odpowiedni strzal dodaj jego dzialanie" << std::endl;
+                }
+                else
+                {
+                    ignore = true;
+                }
+                break;
+
+            default:
+                std::clog << "jestem w default no troche mnie tu nie powinno byc niby hmmm" << std::endl;
+                break;
         }
+
+        std::getline(is, message);
+        if(x != "") message = msgCode1 + " " + msgCode2 + " " + x + " " +  y + " " + player_ + message;
+        else message = msgCode1 + " " + msgCode2 + " " + player_ + message;
+        if(!ignore) std::clog << "Incoming message: " << message << std::endl;
 
         // Continue reading for more messages
         doRead();
@@ -99,11 +121,11 @@ private:
             // Remove this session from the list
             auto self(shared_from_this());
             sessions_.erase(std::remove(sessions_.begin(), sessions_.end(), shared_from_this()), sessions_.end());
+            sendToAll(Messanger::wyszedlGracz());
 
-            for (auto& session : sessions_) {
-                std::clog << "Writing to socket with endpoit: " << session->socket_.remote_endpoint() << std::endl;
-                session->sendMessage(Messanger::wyszedlGracz());
-            }
+            //wylaczanie servera (dajmy mu chwile zeby dokonczyl traffic)
+            std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+            ioContext_.stop();
             // Nie zmieniam ilosci connectow bo w trakcie gry nie mozna sie polaczyc od tego jest lobby
         }
     }
@@ -112,16 +134,14 @@ private:
     asio::streambuf inputBuffer_;
     std::vector<std::shared_ptr<Session>>& sessions_;
     std::mutex& sessionsMutex_;
-    bool isStart = true;
+    int myPlayerNumber;
+    asio::io_context& ioContext_;
 };
 
 class Server {
 public:
     Server(asio::io_context& ioContext, std::size_t port, int startingPlayerIndex)
-        : acceptor_(ioContext, tcp::endpoint(tcp::v4(), port)),
-          socket_(ioContext),
-          sessionsMutex_(),
-          timer_(ioContext) {
+        : ioContext_(ioContext), acceptor_(ioContext, tcp::endpoint(tcp::v4(), port)), socket_(ioContext), sessionsMutex_(), timer_(ioContext) {
         startingPlayerIndex_ = startingPlayerIndex;
         doAccept();
     }
@@ -138,6 +158,7 @@ public:
         startTimer();
     }
 
+
 private:
     void doAccept() {
         acceptor_.async_accept(socket_,
@@ -148,7 +169,7 @@ private:
                     if(connections <= MAX_CONNECTIONS)
                     {
                         std::clog << "we have established connection, it is our " << connections << " connection" << std::endl;
-                        auto session_ = std::make_shared<Session>(std::move(socket_), sessions_, sessionsMutex_);
+                        auto session_ = std::make_shared<Session>(std::move(socket_), sessions_, sessionsMutex_, connections, ioContext_);
                         session_->start(); session_->sendMessage(Messanger::ustawSwojNumer(connections));
                         if (connections == startingPlayerIndex_) session_->sendMessage(Messanger::zacznij(connections));
 
@@ -193,6 +214,7 @@ private:
     int connections = 0;
     int startingPlayerIndex_;
     asio::steady_timer timer_;
+    asio::io_context& ioContext_;
 };
 
 //PS wypadaloby zmienic wystapienia int'a na inta o stalej wielkosci nie zaleznie od architektury np __int32

@@ -12,8 +12,10 @@ public:
     AsyncClient(const std::string& server_ip, unsigned short server_port);
 
     bool start();
+    void run();
 
     void fire(int x, int y, int player);
+    void fire(int x, int y);
 
     void trafil(int x, int y, int player);
 

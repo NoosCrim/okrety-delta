@@ -1,9 +1,12 @@
 # depslib dependency file v1.0
-1705431759 source:/home/milosz/code/branchNet/okrety-delta/networking/newClient.cpp
+1705442675 source:/home/milosz/code/branchNet/okrety-delta/networking/newClient.cpp
 	<iostream>
+	<chrono>
+	<functional>
+	<thread>
 	"client.hpp"
 
-1705436607 /home/milosz/code/branchNet/okrety-delta/networking/client.hpp
+1705442459 /home/milosz/code/branchNet/okrety-delta/networking/client.hpp
 	<asio.hpp>
 	<functional>
 	"messages.hpp"
@@ -13,9 +16,9 @@
 	<map>
 	<string>
 
-1705438407 /home/milosz/code/branchNet/okrety-delta/gameCONSTS.hpp
+1705439418 /home/milosz/code/branchNet/okrety-delta/gameCONSTS.hpp
 
-1705436607 source:/home/milosz/code/branchNet/okrety-delta/networking/client.cpp
+1705443317 source:/home/milosz/code/branchNet/okrety-delta/networking/client.cpp
 	"client.hpp"
 	<iostream>
 
