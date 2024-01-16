@@ -5,60 +5,56 @@
 #include <functional>
 #include "messages.hpp"
 
-using namespace Messanger;
 using namespace asio::ip;
 
 class AsyncClient {
 public:
     AsyncClient(const std::string& server_ip, unsigned short server_port)
         : socket_(io_context_),
-          server_endpoint_(asio::ip::make_address(server_ip), server_port) {
-              start();
-    }
+          server_endpoint_(asio::ip::make_address(server_ip), server_port) {}
 
-    void start() {
-        // Start the asynchronous connection
-        socket_.async_connect(server_endpoint_, [this](std::error_code ec) {
-            if (!ec) {
-                std::cout << "Connected to the server" << std::endl;
+   bool start() {
+        try {
+            // Start the asynchronous connection
+            socket_.connect(server_endpoint_);
+            std::cout << "Connected to the server was succesfull" << std::endl;
 
-                // Start asynchronous read
-                read();
-                fire(123, 456, 789);
-                // Start asynchronous user input
-                //asyncUserInput();
-            } else {
-                std::cerr << "Connection error: " << ec.message() << std::endl;
-            }
-        });
+            // Start asynchronous read
+            read();
+            fire(123, 456, 789);
 
-        // Run the io_context to keep the program alive
-        io_context_.run();
+            // Run the io_context to keep the program alive
+            io_context_.run();
+            return true;
+       } catch (std::exception& e) {
+            std::clog << "Connection refused: " << e.what() << std::endl;
+            return false;
+        }
     }
 
     void fire(int x, int y, int player)
     {
-        write(strzal(x,y,player));
+        write(Messanger::strzal(x,y,player));
     }
 
     void trafil(int x, int y, int player)
     {
-        write(trafiony(x,y,player));
+        write(Messanger::trafiony(x,y,player));
     }
 
     void nieTrafil(int x, int y, int player)
     {
-        write(nieTrafiony(x,y,player));
+        write(Messanger::nieTrafiony(x,y,player));
     }
 
     void niePoprawnieStrzelil(int x, int y, int player)
     {
-        write(niePoprawnyStrzal(x,y,player));
+        write(Messanger::niePoprawnyStrzal(x,y,player));
     }
 
     void graczPrzegral(int player)
     {
-        write(przegranaGracza(player));
+        write(Messanger::przegranaGracza(player));
     }
 
      void setHandler(const std::function<void(MessageCode)>& _handler)

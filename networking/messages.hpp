@@ -1,7 +1,7 @@
 #ifndef MESSAGES_HPP_INCLUDED
 #define MESSAGES_HPP_INCLUDED
 
-#define serverPORT 2137
+#include "../gameCONSTS.hpp"
 #include <map>
 #include <string>
 

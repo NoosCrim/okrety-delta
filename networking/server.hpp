@@ -7,11 +7,8 @@
 #include <mutex>
 #include "messages.hpp"
 
-#define MAX_CONNECTIONS 2
-#define DEFAULT_TURN_TIME 30
 int turnTime = DEFAULT_TURN_TIME;
 
-using namespace Messanger;
 using asio::ip::tcp;
 
 class Session : public std::enable_shared_from_this<Session> {
@@ -131,13 +128,13 @@ private:
                 if (!ec) {
                     std::lock_guard<std::mutex> lock(conectionMutex_);
                     connections++;
-                    if(connections <= MAX_CONNECTIONS + 1)
+                    if(connections <= MAX_CONNECTIONS)
                     {
                         std::clog << "we have established connection, it is our " << connections << " connection" << std::endl;
                         auto session_ = std::make_shared<Session>(std::move(socket_), sessions_, sessionsMutex_);
-                        session_->start(); session_->sendMessage(ustawSwojNumer(connections));
-                        if (connections == startingPlayerIndex_) session_->sendMessage(zacznij(connections));
-                        if(connections == MAX_CONNECTIONS + 1) session_->startReading();
+                        session_->start(); session_->sendMessage(Messanger::ustawSwojNumer(connections));
+                        if (connections == startingPlayerIndex_) session_->sendMessage(Messanger::zacznij(connections));
+
                         if(connections == MAX_CONNECTIONS)
                         {
                             for (auto& session : sessions_) {
