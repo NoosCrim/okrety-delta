@@ -44,6 +44,8 @@
 		<Unit filename="common.hpp" />
 		<Unit filename="event.cpp" />
 		<Unit filename="event.hpp" />
+		<Unit filename="gameCONSTS.cpp" />
+		<Unit filename="gameCONSTS.hpp" />
 		<Unit filename="gameClient.cpp">
 			<Option target="Debug" />
 			<Option target="Client" />
@@ -54,7 +56,26 @@
 		</Unit>
 		<Unit filename="gameCommon.cpp" />
 		<Unit filename="gameCommon.hpp" />
-		<Unit filename="gameGUI.hpp" />
+		<Unit filename="gameGUI.cpp">
+			<Option target="Debug" />
+			<Option target="Client" />
+		</Unit>
+		<Unit filename="gameGUI.hpp">
+			<Option target="Debug" />
+			<Option target="Client" />
+		</Unit>
+		<Unit filename="networking/client.cpp" />
+		<Unit filename="networking/client.hpp">
+			<Option target="Debug" />
+			<Option target="Client" />
+		</Unit>
+		<Unit filename="networking/messages.cpp" />
+		<Unit filename="networking/messages.hpp" />
+		<Unit filename="networking/server.cpp" />
+		<Unit filename="networking/server.hpp">
+			<Option target="Debug" />
+			<Option target="Server" />
+		</Unit>
 		<Unit filename="serverMain.cpp">
 			<Option target="Server" />
 		</Unit>
