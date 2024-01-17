@@ -17,16 +17,24 @@ namespace AVE
         HandleEvents();
         if(mouseClickL)
         {
-            for(Clickable* clickable : myClickables)
-                if(clickable->enabled && clickable->OnClick(mouseX, mouseY, mouseClickL))
+            for(auto i = myClickables.begin(); i != myClickables.end() && mouseClickL;)
+            {
+                auto t = i;
+                i++;
+                if((*t)->enabled && (*t)->OnClick(mouseX, mouseY, mouseClickL))
                 {
                     mouseClickL = 0;
                     break;
                 }
+            }
             OnClick(mouseX, mouseY, mouseClickL);
         }
-        for(Active* active : myActives)
-            active->OnUpdate();
+        for(auto i = myActives.begin(); i != myActives.end();)
+        {
+            auto t = i;
+            i++;
+            (*t)->OnUpdate();
+        }
         Draw();
         OnUpdate();
     }
