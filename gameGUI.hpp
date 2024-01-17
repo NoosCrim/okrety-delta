@@ -2,6 +2,46 @@
 #include <iostream>
 #include <vector>
 #include "AVE.hpp"
+class fsToggleButton : public AVE::Sprite, public AVE::Clickable
+{
+    int mode = 0;
+protected:
+    virtual bool OnClick(int mX, int mY, uint8_t clicks)
+    {
+        if(mX >= x && mX - x <= w && mY >= y && mY - y <= h)
+        {
+            if(mode == 0)
+            {
+                GetWindow()->SetWindowed();
+                mode = (mode+1)%3;
+            }
+            else if(mode == 1)
+            {
+                GetWindow()->SetFullscreen();
+                mode = (mode+1)%3;
+            }
+            else if(mode == 2)
+
+            {
+                GetWindow()->SetBorderless();
+                mode = (mode+1)%3;
+            }
+            return true;
+        }
+        return false;
+    }
+    fsToggleButton(AVE::Texture* _tex, int _sX, int _sY, int _sW, int _sH, float _x, float _y, float _w, float _h) :
+        Sprite(_tex, _sX, _sY, _sW, _sH, _x, _y, _w, _h, 0, false, false),
+        Clickable(_tex->GetOwner())
+    {
+
+    }
+public:
+    static fsToggleButton *CreateTestButton(AVE::Texture* _tex, int _sX, int _sY, int _sW, int _sH, float _x, float _y, float _w, float _h)
+    {
+        return new fsToggleButton(_tex, _sX, _sY, _sW, _sH, _x, _y, _w, _h);
+    }
+};
 class board : public AVE::Sprite, public AVE::Clickable
 {
     const int bW, bH;
@@ -54,6 +94,7 @@ class mWindow : public AVE::Window
     AVE::Texture *checkerTex, *markTex;
     AVE::Sprite *marker;
     board *bgBoard1, *bgBoard2;
+    fsToggleButton *testButton;
     int _bW, _bH;
     virtual void OnStart()
     {
@@ -66,6 +107,7 @@ class mWindow : public AVE::Window
         int t = (wW/2) < wH? (wW/2) : wH;
         bgBoard1 = board::CreateBoard(checkerTex,marker,0,0,_bW,_bH,t*0.1,t*0.1,t*0.85,t*0.85,_bW,_bH);
         bgBoard2 = board::CreateBoard(checkerTex,marker,0,0,_bW,_bH,t*1.05,t*0.1,t*0.85,t*0.85,_bW,_bH);
+        testButton = fsToggleButton::CreateTestButton(markTex, 0,0, 32, 32, 0, 0, 200, 200);
     };
     virtual void  OnUpdate()
     {
