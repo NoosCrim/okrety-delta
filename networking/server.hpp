@@ -13,10 +13,20 @@ int turnTime = DEFAULT_TURN_TIME;
 
 using asio::ip::tcp;
 
+struct odpowiedzNaStrzal {
+    bool oczekujeOdpowiedziNaStrzal;
+    int numerStrzelajacegoGracza;
+};
+
+class Server;
+void zmienTure(Server& server);
+Server* serverPubblic; //potrzebuje uzywac zmiany tury z serwera
+
 class Session : public std::enable_shared_from_this<Session> {
 public:
-    Session(tcp::socket socket, std::vector<std::shared_ptr<Session>>& sessions, std::mutex& sessionsMutex, int playerNumber, asio::io_context& ioContext)
-        : socket_(std::move(socket)), sessions_(sessions), sessionsMutex_(sessionsMutex), myPlayerNumber(playerNumber), ioContext_(ioContext) { }
+    Session(tcp::socket socket, std::vector<std::shared_ptr<Session>>& sessions, std::mutex& sessionsMutex, int playerNumber, asio::io_context& ioContext, odpowiedzNaStrzal& odpowiedzNaStrzal, int& startingPlayerIndex)
+        : socket_(std::move(socket)), sessions_(sessions), sessionsMutex_(sessionsMutex), myPlayerNumber(playerNumber), ioContext_(ioContext), odpowiedzNaStrzal_(odpowiedzNaStrzal),
+        startingPlayerIndex_(startingPlayerIndex) { }
 
     void start() {
         {
@@ -64,6 +74,50 @@ private:
         }
     }
 
+    void sendToPlayer(const std::string& message, int player)
+    {
+        std::clog << "Writing to socket with endpoit: " << sessions_[player - 1]->socket_.remote_endpoint() << std::endl;
+        asio::async_write(sessions_[player - 1]->socket_, asio::buffer(message),
+            [this](const asio::error_code& ec, std::size_t /*length*/) {
+                if (ec) {
+                    handleDisconnect();
+                }
+            });
+    }
+
+    void handleFire(int x, int y, int player)
+    {
+        auto self(shared_from_this());
+        tcp::socket* firedSocket;
+        if(player == 1) { firedSocket = &sessions_[1]->socket_; /*gracz nr 1 strzela w gracza numer 2*/}
+        else { firedSocket = &sessions_[0]->socket_; /*gracz nr 2 strzela w gracza numer 1*/}
+        std::string message = Messanger::strzal(x,y,player);
+        asio::async_write(*firedSocket, asio::buffer(message),
+            [this, firedSocket, message, player, self](const asio::error_code& ec, std::size_t /*length*/) {
+            if (ec) {
+                handleDisconnect();
+            }
+            else
+            {
+                std::clog << "Wyslalem wiadomosc do: " << firedSocket->remote_endpoint() << std::endl;
+                std::clog << "O tresci: " << message;
+                odpowiedzNaStrzal_.oczekujeOdpowiedziNaStrzal = true;
+                odpowiedzNaStrzal_.numerStrzelajacegoGracza = player;
+            }
+        });
+    }
+
+    void closeServer()
+    {
+        //wylaczanie servera (dajmy mu chwile zeby dokonczyl traffic)
+        std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+        std::lock_guard<std::mutex> lock(sessionsMutex_);
+        for (auto& session : sessions_) {
+            session->socket_.close();
+        }
+        ioContext_.stop();
+    }
+
     void handleRead() {
         //Wiadomosc jest w formie MsgCode: (Code) reszta danych
         std::string msgCode1; std::string msgCode2;
@@ -78,14 +132,56 @@ private:
                 X = stoi(x);
                 Y = stoi(y);
                 incominPlayerNumber_ = stoi(player_);
-                if(incominPlayerNumber_ == myPlayerNumber)
+                if(incominPlayerNumber_ == myPlayerNumber && odpowiedzNaStrzal_.oczekujeOdpowiedziNaStrzal == false)
                 {
                     std::clog << "Odpowiedni strzal dodaj jego dzialanie" << std::endl;
+                    handleFire(X, Y, incominPlayerNumber_);
                 }
                 else
                 {
                     ignore = true;
                 }
+                break;
+
+            case MessageCode::niePoprawnyStrzal:
+                is >> x >> y >> player_;
+                X = stoi(x);
+                Y = stoi(y);
+                incominPlayerNumber_ = stoi(player_);
+                if(odpowiedzNaStrzal_.oczekujeOdpowiedziNaStrzal == false) { ignore = true; break;}
+                odpowiedzNaStrzal_.oczekujeOdpowiedziNaStrzal = false; //teraz oczekuje ponownego strzalu
+                sendToPlayer(Messanger::niePoprawnyStrzal(X,Y,incominPlayerNumber_), incominPlayerNumber_);
+                break;
+
+            case MessageCode::trafiony:
+                is >> x >> y >> player_;
+                X = stoi(x);
+                Y = stoi(y);
+                incominPlayerNumber_ = stoi(player_);
+                if(odpowiedzNaStrzal_.oczekujeOdpowiedziNaStrzal == false) { ignore = true; break;}
+                odpowiedzNaStrzal_.oczekujeOdpowiedziNaStrzal = false; //teraz oczekuje ponownego strzalu
+                sendToPlayer(Messanger::trafiony(X,Y,incominPlayerNumber_), incominPlayerNumber_);
+                zmienTure(*serverPubblic);
+                break;
+
+            case MessageCode::nieTrafiony:
+                is >> x >> y >> player_;
+                X = stoi(x);
+                Y = stoi(y);
+                incominPlayerNumber_ = stoi(player_);
+                if(odpowiedzNaStrzal_.oczekujeOdpowiedziNaStrzal == false) { ignore = true; break;}
+                odpowiedzNaStrzal_.oczekujeOdpowiedziNaStrzal = false; //teraz oczekuje ponownego strzalu
+                sendToPlayer(Messanger::nieTrafiony(X,Y,incominPlayerNumber_), incominPlayerNumber_);
+                zmienTure(*serverPubblic);
+                break;
+
+            case MessageCode::przegranaGracza:
+                is >> player_;
+                incominPlayerNumber_ = stoi(player_);
+                if(odpowiedzNaStrzal_.oczekujeOdpowiedziNaStrzal == false) { ignore = true; break;}
+                odpowiedzNaStrzal_.oczekujeOdpowiedziNaStrzal = false; //teraz oczekuje ponownego strzalu
+                sendToAll(Messanger::przegranaGracza(incominPlayerNumber_));
+                closeServer();
                 break;
 
             default:
@@ -106,7 +202,6 @@ private:
         //debugging line
         if(message == "") std::clog << "Wysylam pusta wiadomosc " << std::endl;
         auto self(shared_from_this());
-        // do logic write or not to write
         asio::async_write(socket_, asio::buffer(message),
             [this, self](const asio::error_code& ec, std::size_t /*length*/) {
                 if (ec) {
@@ -123,9 +218,7 @@ private:
             sessions_.erase(std::remove(sessions_.begin(), sessions_.end(), shared_from_this()), sessions_.end());
             sendToAll(Messanger::wyszedlGracz());
 
-            //wylaczanie servera (dajmy mu chwile zeby dokonczyl traffic)
-            std::this_thread::sleep_for(std::chrono::milliseconds(2000));
-            ioContext_.stop();
+            closeServer();
             // Nie zmieniam ilosci connectow bo w trakcie gry nie mozna sie polaczyc od tego jest lobby
         }
     }
@@ -136,6 +229,8 @@ private:
     std::mutex& sessionsMutex_;
     int myPlayerNumber;
     asio::io_context& ioContext_;
+    odpowiedzNaStrzal& odpowiedzNaStrzal_;
+    int& startingPlayerIndex_;
 };
 
 class Server {
@@ -143,21 +238,30 @@ public:
     Server(asio::io_context& ioContext, std::size_t port, int startingPlayerIndex)
         : ioContext_(ioContext), acceptor_(ioContext, tcp::endpoint(tcp::v4(), port)), socket_(ioContext), sessionsMutex_(), timer_(ioContext) {
         startingPlayerIndex_ = startingPlayerIndex;
+        odpowiedzNaStrzal_.numerStrzelajacegoGracza = -1;
+        odpowiedzNaStrzal_.oczekujeOdpowiedziNaStrzal = false;
+        serverPubblic = this;
         doAccept();
     }
 
     void zmienTure()
     {
-        std::lock_guard<std::mutex> lock(sessionsMutex_);
+        std::lock_guard<std::mutex> lock(timerMutex_);
         timer_.cancel();
         startingPlayerIndex_ = startingPlayerIndex_%MAX_CONNECTIONS + 1;
 
-        for (auto& session : sessions_) {
-            session->sendMessage(Messanger::startTury(startingPlayerIndex_));
-        }
+        zaznijTure();
         startTimer();
     }
 
+    void zaznijTure()
+    {
+        std::lock_guard<std::mutex> lock(sessionsMutex_);
+        for (auto& session : sessions_) {
+                std::clog << "wysylana wiadomosc: " << Messanger::startTury(startingPlayerIndex_);
+            session->sendMessage(Messanger::startTury(startingPlayerIndex_));
+        }
+    }
 
 private:
     void doAccept() {
@@ -169,12 +273,12 @@ private:
                     if(connections <= MAX_CONNECTIONS)
                     {
                         std::clog << "we have established connection, it is our " << connections << " connection" << std::endl;
-                        auto session_ = std::make_shared<Session>(std::move(socket_), sessions_, sessionsMutex_, connections, ioContext_);
+                        auto session_ = std::make_shared<Session>(std::move(socket_), sessions_, sessionsMutex_, connections, ioContext_, odpowiedzNaStrzal_, startingPlayerIndex_);
                         session_->start(); session_->sendMessage(Messanger::ustawSwojNumer(connections));
-                        if (connections == startingPlayerIndex_) session_->sendMessage(Messanger::zacznij(connections));
 
                         if(connections == MAX_CONNECTIONS)
                         {
+                            zaznijTure();
                             for (auto& session : sessions_) {
                                 session->startReading();
                             }
@@ -211,11 +315,18 @@ private:
     std::vector<std::shared_ptr<Session>> sessions_;
     std::mutex sessionsMutex_;
     std::mutex conectionMutex_;
+    std::mutex timerMutex_;
     int connections = 0;
     int startingPlayerIndex_;
     asio::steady_timer timer_;
     asio::io_context& ioContext_;
+    odpowiedzNaStrzal odpowiedzNaStrzal_;
 };
+
+void zmienTure(Server& server)
+{
+    server.zmienTure();
+}
 
 //PS wypadaloby zmienic wystapienia int'a na inta o stalej wielkosci nie zaleznie od architektury np __int32
 #endif // SERVER_HPP_INCLUDED

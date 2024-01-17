@@ -25,7 +25,7 @@ public:
 
     void graczPrzegral(int player);
 
-    void setHandler(const std::function<void(MessageCode)>& _handler);
+    void setHandler(const std::function<void(MessageCode, int, int, int)>& _handler);
 
     int getPlayerNumber();
 
@@ -39,7 +39,7 @@ private:
 
     void handleRead();
 
-    std::function<void(MessageCode)> handler = [](MessageCode){};
+    std::function<void(MessageCode, int x, int y, int player)> handler = [](MessageCode, int, int, int){};
     asio::io_context io_context_;
     tcp::socket socket_;
     tcp::endpoint server_endpoint_;

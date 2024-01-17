@@ -1,8 +1,8 @@
 # depslib dependency file v1.0
-1705439258 source:/home/milosz/code/branchNet/okrety-delta/networking/messages.cpp
+1705502683 source:/home/milosz/code/branchNet/okrety-delta/networking/messages.cpp
 	"messages.hpp"
 
-1705439264 /home/milosz/code/branchNet/okrety-delta/networking/messages.hpp
+1705506298 /home/milosz/code/branchNet/okrety-delta/networking/messages.hpp
 	"../gameCONSTS.hpp"
 	<map>
 	<string>
@@ -13,7 +13,7 @@
 	<iostream>
 	"server.hpp"
 
-1705448087 /home/milosz/code/branchNet/okrety-delta/networking/server.hpp
+1705510727 /home/milosz/code/branchNet/okrety-delta/networking/server.hpp
 	<asio.hpp>
 	<vector>
 	<memory>

@@ -33,6 +33,7 @@ int main() {
             std::cout << "podaj kordynaty x i y twojego strzalu" << std::endl;
             int x; int y; std::cin>>x>>y;
             client_->fire(x,y);
+            client_->niePoprawnieStrzelil(x,y,1);
             // Dodaj kod do wysyłania wiadomości na strumień wejścia tutaj
 
             // Ponowne ustawienie timera
