@@ -11,18 +11,18 @@ namespace Client{
 //metody PlayerBoard
     bool PlayerBoard::AddShip(const Ship &ship)
     {
-        for(unsigned int i=0;i<ship.squares.size();i++)  //pętla po wszytskich elementach statku
+        for(unsigned int i=0; i<ship.squares.size(); i++)  //pętla po wszytskich elementach statku
         {
             if(ship.squares[i].x >= width || ship.squares[i].x < 0  ||  ship.squares[i].y >= height || ship.squares[i].y < 0)  //Jeżeli któryś z elementów statku nie mieści się na planszy
                 return false;   //zwróc false
 
         }
 
-        for(unsigned int j=0;j<ships.size();j++) //pętla po wszytskich "dobych" statkach
+        for(unsigned int j=0; j<ships.size(); j++) //pętla po wszytskich "dobych" statkach
         {
-            for(unsigned int k=0;k<ships[j].squares.size();k++)  //pętla po wszytskich elementach "dobrego" statku
+            for(unsigned int k=0; k<ships[j].squares.size(); k++)  //pętla po wszytskich elementach "dobrego" statku
             {
-                for(unsigned int i=0;i<ship.squares.size();i++)
+                for(unsigned int i=0; i<ship.squares.size(); i++)
                 {
                     if(ship.squares[i].x == ships[j].squares[k].x && ship.squares[i].y == ships[j].squares[k].y)    //Jeżeli koliduje z innymi "dobrymi" statkami
                     {
@@ -47,7 +47,7 @@ namespace Client{
     {
         visited[k]=1;
         ile++;
-        for(int i=0;i<ship.squares.size();i++)
+        for(unsigned int i=0; i<ship.squares.size(); i++)
             {
                 if(visited[i]==0)
                 {
@@ -67,17 +67,33 @@ namespace Client{
 
     bool PlayerBoard::TakeShot(Coords pos)
     {
-        for(unsigned int i=0;i<ships.size();i++)
+        for(unsigned int i=0; i<ships.size(); i++)    //na każdym statku z ships.
         {
-            if(ships[i].Hit(pos) == true)    //Wywołuje Hit(pos) na każdym statku z ships.
+            if(ships[i].Hit(pos) == true)    //Wywołuje Hit(pos)
             {
                 return true;    //jeżeli Hit zwróci true, zwróć true i zakończ pętle.
             }
         }
         //Jeżeli żaden Hit nie zwróci true to zwróć false.
             return false;
+    }
+
+
+    bool PlayerBoard::IsDead()
+    {
+        for(unsigned int i=0; i<ships.size(); i++)  //na każdym statku z ships.
+        {
+            if(ships[i].IsDead() == false)   //wywołuje IsDead()
+            {
+                return false;       //jeżeli IsDead zwróci false - jakiś statek żyje, to zwróć false - nie wszystkie statki nieżyją
+            }
+        }
+
+        //jeżeli żaden IsDead nie zwróci false - wszytskie statki nie żyją
+            return true;    //zwróc true - wszystkie statki nie żyją - gracz przegrał
 
     }
+
 
 
 
