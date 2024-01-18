@@ -4,18 +4,22 @@ import subprocess
 import tkinter as tk
 from tkinter import messagebox, Label, Entry, simpledialog
 
+# Początkowe wartości
 window_width = 960
 window_height = 540
 ip_address = "0.0.0.0"
 port = "2137"
 
 
+# Włączanie właściwego klienta gry
 def launch():
     # print(launch_arguments)
+    # Sprawdzanie na jakim systemie jest uruchamiana gra
     try:
+        result_string = ' '.join(launch_arguments)
         if platform.system() == "Windows":
             # messagebox.showinfo("Windows!", "Uruchamiam grę na systemie Windows.")
-            p = subprocess.run(["okrety-delta.exe"] + launch_arguments, shell=True, check=False)
+            p = subprocess.run("okrety-delta.exe " + result_string, shell=True, check=False)
             returnProcess = p.returncode
             if returnProcess == 1:
                 messagebox.showerror("Błąd", "Złe wejście")
@@ -24,17 +28,19 @@ def launch():
 
         else:
             # messagebox.showinfo("Linux!", "Uruchamiam grę na systemie Linux.")
-            p = subprocess.run(["./okrety-delta"] + launch_arguments, shell=True, check=False)
+            p = subprocess.run("./okrety-delta "+result_string, shell=True, check=False)
             returnProcess = p.returncode
             if returnProcess == 1:
                 messagebox.showerror("Błąd", "Złe wejście")
             elif returnProcess == 2:
                 messagebox.showerror("Błąd", "Nie udało się połączyć")
 
+    # Jeśli coś się nie powiodło, poinformuj o tym gracza
     except subprocess.CalledProcessError as e:
         messagebox.showerror("Błąd", f"Wystąpił błąd podczas uruchamiania gry: {e}")
 
 
+# Ogólny opis gry i funkcji launchera
 def show_help():
     messagebox.showinfo("Pomoc", "Gra w statki to klasyczna rozgrywka strategiczna, w której gracze rozmieszczają "
                                  "swoje statki na planszy i starają się trafić statki przeciwnika przez strategiczne "
@@ -45,6 +51,7 @@ def show_help():
                                  "elementami wizualnymi gry przed rozpoczęciem rozgrywki.")
 
 
+# Przełączania na pełny ekran i zmienianie argumentów wywołania
 def toggle_fullscreen(arguments):
     # Toggle pełnego ekranu
     if root.attributes("-fullscreen"):
@@ -55,8 +62,8 @@ def toggle_fullscreen(arguments):
     root.attributes("-fullscreen", not root.attributes("-fullscreen"))
 
 
+# Ukryj menu główne i pokaż ekran opcji
 def toggle_option_buttons():
-    # Ukryj/przywróć przyciski uruchamiania i pomocy
     start_button.pack_forget()
     help_button.pack_forget()
     options_button.pack_forget()
@@ -67,8 +74,8 @@ def toggle_option_buttons():
     fullscreen_frame.pack(side=tk.LEFT, padx=25)
 
 
+# Ukryj menu główne i pokaż ekran pomocy
 def toggle_help_buttons():
-    # Ukryj/przywróć przyciski uruchamiania i pomocy
     start_button.pack_forget()
     help_button.pack_forget()
     options_button.pack_forget()
@@ -79,8 +86,8 @@ def toggle_help_buttons():
     gui_desc_frame.pack(side=tk.LEFT, padx=0)
 
 
+# Ukryj ekran opcji/pomocy i pokaż menu główne
 def back_to_menu():
-    # Przywróć przyciski menu głównego, ukryj gui pomocy/opcji
     option_back_button.pack_forget()
     fullscreen_frame.pack_forget()
 
@@ -94,18 +101,20 @@ def back_to_menu():
     exit_button.pack(pady=20)
 
 
+# Ustawianie tła launchera i dopasowanie go
 def set_background():
     label1.config(image=bg)
     label1.place(x=-5, y=-5)
     label1.config(width=2560, height=1440)
 
 
+# Szybka zmiana koloru przycisku
 def change_button_color_hex(button, hex_color):
     button.config(bg=hex_color)
 
 
+# Aktualizacja zmiennych wywołania w zależności od wpisanych przez gracza wielkośći
 def update_dimensions():
-    # Funkcja wywoływana po wciśnięciu przycisku "Aktualizuj"
     global window_width, window_height
     launch_arguments.remove("-Ws")
     launch_arguments.remove(str(window_width))
@@ -115,9 +124,10 @@ def update_dimensions():
     window_height = int(height_var.get())
     launch_arguments.append(width_var.get())
     launch_arguments.append(height_var.get())
-    print(launch_arguments)
+    # print(launch_arguments)
 
 
+# Przyjmij adres IP id od gracza
 def get_ip_address():
     global ip_address
     launch_arguments.remove("-H")
@@ -133,6 +143,7 @@ def get_ip_address():
         messagebox.showerror("Błąd", "Podany adres IP jest niepoprawny.")
 
 
+# Sprawdź czy adres IP jest poprawny
 def is_valid_ip(ip):
     try:
         # Sprawdzenie, czy adres IP jest poprawny
@@ -142,6 +153,7 @@ def is_valid_ip(ip):
         return False
 
 
+# Zamknij okno
 def exit():
     root.destroy()
 
@@ -152,7 +164,6 @@ if __name__ == "__main__":
     root.title("Okręty Delta")
 
     # Początkowy rozmiar okna w rozdzielczości 16:9
-
     width_var = tk.StringVar()
     width_var.set(str(window_width))
 
@@ -170,11 +181,10 @@ if __name__ == "__main__":
     icon = tk.PhotoImage(file=r"assets/skullMarker.png")
     root.tk.call('wm', 'iconphoto', root._w, icon)
 
+    # Podstawowy wygląd tablicy argumentów wywołania
     launch_arguments = ["-Ws", width_var.get(), height_var.get()]
-
     launch_arguments.append("-P")
     launch_arguments.append(str(port))
-
     launch_arguments.append("-H")
     launch_arguments.append(ip_address)
 
