@@ -19,7 +19,7 @@ def launch():
         result_string = ' '.join(launch_arguments)
         if platform.system() == "Windows":
             # messagebox.showinfo("Windows!", "Uruchamiam grę na systemie Windows.")
-            p = subprocess.run("okrety-delta.exe " + result_string, shell=True, check=False)
+            p = subprocess.run("okrety-delta-client.exe " + result_string, shell=True, check=False)
             returnProcess = p.returncode
             if returnProcess == 1:
                 messagebox.showerror("Błąd", "Złe wejście")
@@ -28,7 +28,7 @@ def launch():
 
         else:
             # messagebox.showinfo("Linux!", "Uruchamiam grę na systemie Linux.")
-            p = subprocess.run("./okrety-delta "+result_string, shell=True, check=False)
+            p = subprocess.run("./okrety-delta-client "+result_string, shell=True, check=False)
             returnProcess = p.returncode
             if returnProcess == 1:
                 messagebox.showerror("Błąd", "Złe wejście")
