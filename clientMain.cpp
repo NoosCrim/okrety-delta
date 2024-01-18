@@ -1,24 +1,19 @@
 #include "gameGUI.hpp"
+#include "networking/client.hpp"
 int main(int argc, const char *argv[])
 {
     /// flag handling
     int windowWidth = 1280, windowHeight = 960;
-    int boardWidth = 10, boardHeight = 10;
-    const char* targetIP = nullptr;
+    const char* targetIP = "127.0.0.1";
     bool useFullscreen = false;
-    unsigned int port = 0;
+    unsigned int port = 2137;
+    /*
     for(int i = 1; i < argc; i++) // flag handling
     {
         if(strcmp(argv[i], "-Ws") == 0) // window size flag
         {
             windowWidth = std::stoi(argv[i+1]);
             windowHeight = std::stoi(argv[i+2]);
-            i+=2;
-        }
-        else if(strcmp(argv[i], "-Bs") == 0) // board size flag
-        {
-            boardWidth = std::stoi(argv[i+1]);
-            boardHeight = std::stoi(argv[i+2]);
             i+=2;
         }
         else if(strcmp(argv[i], "-H") == 0) //host IP flag
@@ -46,9 +41,17 @@ int main(int argc, const char *argv[])
         std::cerr << "Please, provide host IP" << std::endl;
         return 1;
     }
+    */
     /// end of flag handling
-
+    AsyncClient netClient(targetIP, port);
+    //if(!netClient.start())
+        //return 1;
     AVE::Init();
+    OkretyGame game(netClient);
+    game.Open("Okrety delta", 0,0, windowWidth, windowHeight);
+    if(useFullscreen)
+        game.SetBorderless();
+    game.StartMainLoop();
     AVE::DeInit();
     return 0;
 }

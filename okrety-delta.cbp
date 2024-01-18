@@ -71,7 +71,6 @@
 		</Unit>
 		<Unit filename="networking/messages.cpp" />
 		<Unit filename="networking/messages.hpp" />
-		<Unit filename="networking/server.cpp" />
 		<Unit filename="networking/server.hpp">
 			<Option target="Debug" />
 			<Option target="Server" />

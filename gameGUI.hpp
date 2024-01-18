@@ -1,121 +1,105 @@
 #pragma once
 #include <iostream>
 #include <vector>
+#include <functional>
 #include "AVE.hpp"
-class fsToggleButton : public AVE::Sprite, public AVE::Clickable
+#include "gameClient.hpp"
+#include "gameCommon.hpp"
+#include "gameCONSTS.hpp"
+#include "networking/client.hpp"
+class AsyncClient;
+class FlashAnim : public virtual AVE::Sprite
 {
-    int mode = 0;
-protected:
-    virtual bool OnClick(int mX, int mY, uint8_t clicks)
+private:
+    int visibleFrames, hiddenFrames, cycles, i = 0;
+    void OnUpdate()
     {
-        if(mX >= x && mX - x <= w && mY >= y && mY - y <= h)
+        if(i/(visibleFrames+hiddenFrames) >= cycles)
         {
-            if(mode == 0)
-            {
-                GetWindow()->SetWindowed();
-                mode = (mode+1)%3;
-            }
-            else if(mode == 1)
-            {
-                GetWindow()->SetFullscreen();
-                mode = (mode+1)%3;
-            }
-            else if(mode == 2)
-
-            {
-                GetWindow()->SetBorderless();
-                mode = (mode+1)%3;
-            }
-            return true;
+            delete this;
+            return;
         }
-        return false;
+        if(i%(visibleFrames+hiddenFrames) < visibleFrames)
+            visible = true;
+        else visible = false;
+        i++;
     }
-    fsToggleButton(AVE::Texture* _tex, int _sX, int _sY, int _sW, int _sH, float _x, float _y, float _w, float _h) :
-        Sprite(_tex, _sX, _sY, _sW, _sH, _x, _y, _w, _h, 0, false, false),
-        Clickable(_tex->GetOwner())
+    FlashAnim(AVE::Texture* tex, int _visibleFrames, int _hiddenFrames, int _cycles, int sX = 0, int sY = 0, int sW = 0, int sH = 0, float x = 0, float y = 0, float w = 0, float h = 0, float angle = 0, bool flipH = 0, bool flipV = 1):
+        AVE::Sprite(tex,sX,sY,sW,sH,x,y,w,h,angle,flipH,flipV),
+        visibleFrames(_visibleFrames),
+        hiddenFrames(_hiddenFrames),
+        cycles(_cycles)
     {
 
     }
 public:
-    static fsToggleButton *CreateTestButton(AVE::Texture* _tex, int _sX, int _sY, int _sW, int _sH, float _x, float _y, float _w, float _h)
+    virtual ~FlashAnim()
     {
-        return new fsToggleButton(_tex, _sX, _sY, _sW, _sH, _x, _y, _w, _h);
+
+    }
+    static AVE::Sprite* CreateFlashAnim(AVE::Texture* tex, int _visibleFrames, int _hiddenFrames, int _cycles, int sX = 0, int sY = 0, int sW = 0, int sH = 0, float x = 0, float y = 0, float w = 0, float h = 0, float angle = 0, bool flipH = 0, bool flipV = 0)
+    {
+        return new FlashAnim(tex, _visibleFrames, _hiddenFrames, _cycles, sX, sY, sW, sH, x, y, w, h, angle, flipH, flipV);
     }
 };
-class board : public AVE::Sprite, public AVE::Clickable
+class OkretyGame : public AVE::Window
 {
-    const int bW, bH;
-    std::vector<std::vector<AVE::Sprite*>> markers;
-    const Sprite* marker;
-    board(AVE::Texture* tex, const AVE::Sprite* mark, int _sX, int _sY, int _sW, int _sH, int _x, int _y, int _w, int _h, int _bW, int _bH) :
-        AVE::Sprite(tex,_sX,_sY,_sW,_sH, _x, _y, _w, _h, 0, false, false),
-        AVE::Clickable(tex->GetOwner()),
-        bW(_bW), bH(_bH),
-        markers(_bW, std::vector<Sprite*>(_bH, nullptr)),
-        marker(mark)
+    void clickHandler1();
+    void clickHandler2();
+    void EndTurn();
+    void StartTurn();
+    void WaitAnswer();
+    void MessageHandler(MessageCode msgCode, int x, int y, int playerNum);
+    class TimerBar : virtual AVE::Sprite
     {
-
-    }
-    virtual bool OnClick(int mX, int mY, uint8_t clicks) override
-    {
-        float squareW = w / bW, squareH = h / bH;
-        float fX = mX - x, fY = mY - y;
-        if(fX < w && fY < h && fX >= 0 && fY >= 0)
-        {
-            int bX = int(fX/squareW), bY = int(fY/squareH);
-            //std::cout << "Clicked on: (" << bX << ", " << bY << ")" << std::endl;
-            if(markers[bX][bY])
-            {
-                delete markers[bX][bY];
-                markers[bX][bY] = nullptr;
-            }
-            else
-            {
-                markers[bX][bY] = AVE::Sprite::CreateSprite(marker);
-                int mS = squareW < squareH?squareW:squareH;
-                markers[bX][bY]->x = bX * squareW - mS/2 + x + squareW/2;
-                markers[bX][bY]->y = bY * squareH - mS/2 + y + squareH/2;
-                markers[bX][bY]->w = markers[bX][bY]->h = mS;
-
-            }
-            return true;
-        }
-        return false;
-    }
-public:
-    static board* CreateBoard(AVE::Texture* tex, AVE::Sprite* mark, int _sX, int _sY, int _sW, int _sH, int _x, int _y, int _w, int _h, int _bW, int _bH)
-    {
-        return new board(tex,mark,_sX,_sY,_sW,_sH,_x,_y,_w,_h,_bW,_bH);
-    }
-};
-class mWindow : public AVE::Window
-{
-    uint8_t I = 0;
-    AVE::Texture *checkerTex, *markTex;
-    AVE::Sprite *marker;
-    board *bgBoard1, *bgBoard2;
-    fsToggleButton *testButton;
-    int _bW, _bH;
-    virtual void OnStart()
-    {
-        checkerTex = LoadTexture("assets/checkerboard.png");
-        markTex = LoadTexture("assets/crossMarker.png");
-        marker = AVE::Sprite::CreateSprite(markTex,0,0,2000,2000,0,0,50,50,0,false,false);
-        marker->visible = false;
-        int wW, wH;
-        GetSize(&wW, &wH);
-        int t = (wW/2) < wH? (wW/2) : wH;
-        bgBoard1 = board::CreateBoard(checkerTex,marker,0,0,_bW,_bH,t*0.1,t*0.1,t*0.85,t*0.85,_bW,_bH);
-        bgBoard2 = board::CreateBoard(checkerTex,marker,0,0,_bW,_bH,t*1.05,t*0.1,t*0.85,t*0.85,_bW,_bH);
-        testButton = fsToggleButton::CreateTestButton(markTex, 0,0, 32, 32, 0, 0, 200, 200);
+    private:
+        TimerBar(AVE::Texture* tex, int _sX, int _sY, int _sW, int _sH, int _x, int _y, int _w, int _h, unsigned int _duration);
+        int SsW, SW;
+        unsigned long long startingTime;
+        unsigned int duration;
+        void OnUpdate() override;
+    public:
+        static TimerBar* CreateTimerBar(AVE::Texture* tex, int _sX, int _sY, int _sW, int _sH, int _x, int _y, int _w, int _h, unsigned int _duration);
     };
-    virtual void  OnUpdate()
+    class Button : public AVE::Sprite, public AVE::Clickable
     {
-
+    protected:
+        virtual bool OnClick(int mX, int mY, uint8_t clicks);
+        Button(AVE::Texture* _tex, int _sX, int _sY, int _sW, int _sH, float _x, float _y, float _w, float _h, std::function<void(void)> _clickHandler);
+    public:
+        std::function<void(void)> clickHandler;
+        static Button *CreateButton(AVE::Texture* _tex, int _sX, int _sY, int _sW, int _sH, float _x, float _y, float _w, float _h, std::function<void(void)> _clickHandler);
     };
-public:
-    mWindow(int boardWidth, int boardHeight) : _bW(boardWidth), _bH(boardHeight)
+    class Board : public AVE::Sprite, public AVE::Clickable
     {
-
-    }
+        const int bW, bH;
+        const Sprite* marker;
+        const OkretyGame &game;
+        Board(AVE::Texture* tex, const AVE::Sprite* mark, int _sX, int _sY, int _sW, int _sH, int _x, int _y, int _w, int _h, int _bW, int _bH, const OkretyGame& _game);
+        virtual bool OnClick(int mX, int mY, uint8_t clicks);
+    public:
+        std::vector<AVE::Sprite*> tempMarkers, permMarkers;
+        std::vector<Game::Coords> marked;
+        bool interactable = true, capOne = false;
+        static Board* CreateBoard(AVE::Texture* tex, AVE::Sprite* mark, int _sX, int _sY, int _sW, int _sH, int _x, int _y, int _w, int _h, int _bW, int _bH, const OkretyGame& _game);
+        virtual ~Board();
+    };
+private:
+    unsigned int placedShips = 0;
+    std::vector<Game::Coords> shots;
+    float margin = 0.1f, buttonMargin = 0.1f, t;
+    int wW, wH;
+    AVE::Texture* digits[10];
+    AVE::Texture *checkerTex, *crossTex, *checkTex, *squareTex, *circleTex, *blueSquareTex, *blueCircleTex, *progress_bar,
+    *enemy_turn_header, *shoot_your_shot_header, *wait_for_answer_header, *place_ship_header, *loser, *winner;
+    AVE::Sprite *marker1, *marker2, *header, *headerNum;
+    TimerBar *timer = nullptr;
+    Button *checkButton;
+    Board *playerBoardSprite, *enemyBoardSprite;
+    Game::Client::PlayerBoard playerBoard;
+    AsyncClient& netClient;
+    void OnStart() override;
+    void OnCloseAttempt() override;
+public:
+    OkretyGame(AsyncClient& _netClient);
 };
