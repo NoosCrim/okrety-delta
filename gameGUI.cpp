@@ -117,7 +117,10 @@ void OkretyGame::MessageHandler(MessageCode msgCode, int x, int y, int playerNum
         if(playerNum != netClient.getPlayerNumber())
         {
             if(playerBoard.TakeShot({x,y}))
-                netClient.trafil(x,y,netClient.getPlayerNumber());
+                if(playerBoard.IsDead())
+                    netClient.graczPrzegral(netClient.getPlayerNumber());
+                else
+                    netClient.trafil(x,y,netClient.getPlayerNumber());
             else
                 netClient.nieTrafil(x,y,netClient.getPlayerNumber());
             if(timer) delete timer;
@@ -158,6 +161,7 @@ void OkretyGame::clickHandler1()
     {
         Game::Ship newShip;
         newShip.squares = playerBoardSprite->marked;
+        newShip.hits.resize(newShip.squares.size());
         if(playerBoard.AddShip(newShip))
         {
             placedShips++;
@@ -302,6 +306,7 @@ OkretyGame::OkretyGame(AsyncClient& _netClient) :
 }
 void OkretyGame::OnStart()
 {
+    //make it ↓ not a commant when handler type gets changed
     //netClient.setHandler([this](MessageCode code, int x, int y, int playerNum){MessageHandler(code,x,y,playerNum);});
     checkerTex = LoadTexture("assets/checkerboard.png");
     crossTex = LoadTexture("assets/crossMarker.png");

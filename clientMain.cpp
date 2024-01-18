@@ -2,13 +2,12 @@
 #include "networking/client.hpp"
 int main(int argc, const char *argv[])
 {
-    /// flag handling
     int windowWidth = 1280, windowHeight = 960;
-    const char* targetIP = "127.0.0.1";
+    const char* targetIP = nullptr;
     bool useFullscreen = false;
-    unsigned int port = 2137;
-    /*
-    for(int i = 1; i < argc; i++) // flag handling
+    unsigned int port = 0;
+    /// flag handling
+    for(int i = 1; i < argc; i++)
     {
         if(strcmp(argv[i], "-Ws") == 0) // window size flag
         {
@@ -41,11 +40,10 @@ int main(int argc, const char *argv[])
         std::cerr << "Please, provide host IP" << std::endl;
         return 1;
     }
-    */
     /// end of flag handling
     AsyncClient netClient(targetIP, port);
-    //if(!netClient.start())
-        //return 1;
+    if(!netClient.start())
+        return 1;
     AVE::Init();
     OkretyGame game(netClient);
     game.Open("Okrety delta", 0,0, windowWidth, windowHeight);
