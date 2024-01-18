@@ -20,8 +20,9 @@ class PlayerBoard   ///klasa
         PlayerBoard(int width, int height);
 
     //metody
-        bool AddShip(const Ship& ship);
-        bool TakeShot(Coords pos);
+        bool AddShip(const Ship& ship);     //sprawdza czy statek dobrze postawiony
+        bool TakeShot(Coords pos);      //sprzwdza czy statek trafiony
+        bool IsDead();  //sprawdza czy wszystkie statki nie żyją - czy gracz przegrał
 
     private:
     //dfs

@@ -16,14 +16,15 @@ namespace Game {
         bool hit;
     };
 
-   
+
     struct Ship {
 
         std::vector<Coords> squares;
         std::vector<bool> hits;
 
-   
+
         bool Hit(Coords pos);
+        bool IsDead();  //sprawdza czy statek żyje
 
     };
 
