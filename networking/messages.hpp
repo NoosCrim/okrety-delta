@@ -20,6 +20,7 @@ extern std::map<MessageCode, std::string> messageCodes;
 
 extern std::map<std::string, MessageCode> messageCodesOdwrot;
 
+
 namespace Messanger {
     //tworzy wiadomosc o tresci: numer pola na mapie, informacja o numerze gracza który strzela
     std::string strzal(int x, int y, int player); //player trzyma informacje kto oddal strzal

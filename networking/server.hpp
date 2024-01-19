@@ -259,8 +259,7 @@ public:
         std::lock_guard<std::mutex> lock(sessionsMutex_);
         for (auto& session : sessions_) {
                 std::clog << "wysylana wiadomosc: " << Messanger::startTury(startingPlayerIndex_);
-            session->sendMessage(Messanger::startTury(startingPlayerIndex_));
-        }
+            session->sendMessage(Messanger::startTury(startingPlayerIndex_));}
     }
 
 private:
