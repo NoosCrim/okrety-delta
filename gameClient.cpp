@@ -18,7 +18,7 @@ namespace Client{
 
         }
 
-        for(unsigned int j=0; j<ships.size(); j++) //pętla po wszytskich "dobych" statkach
+        for(unsigned int j=0; j<ships.size(); j++) //pętla po wszytskich "dobrych" statkach
         {
             for(unsigned int k=0; k<ships[j].squares.size(); k++)  //pętla po wszytskich elementach "dobrego" statku
             {

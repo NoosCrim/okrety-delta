@@ -61,13 +61,16 @@ def toggle_fullscreen(arguments):
 
     root.attributes("-fullscreen", not root.attributes("-fullscreen"))
 
-
-# Ukryj menu główne i pokaż ekran opcji
-def toggle_option_buttons():
+def hide_menu():
     start_button.pack_forget()
     help_button.pack_forget()
     options_button.pack_forget()
     exit_button.pack_forget()
+
+
+# Ukryj menu główne i pokaż ekran opcji
+def toggle_option_buttons():
+    hide_menu()
 
     option_back_button.pack(side=tk.LEFT, padx=25)
 
@@ -76,14 +79,12 @@ def toggle_option_buttons():
 
 # Ukryj menu główne i pokaż ekran pomocy
 def toggle_help_buttons():
-    start_button.pack_forget()
-    help_button.pack_forget()
-    options_button.pack_forget()
-    exit_button.pack_forget()
+    hide_menu()
 
     help_frame.pack(side=tk.BOTTOM, pady=25)
     gui_img_frame.pack(side=tk.LEFT, padx=25)
     gui_desc_frame.pack(side=tk.LEFT, padx=0)
+    gui_proceeding_frame.pack(side=tk.RIGHT, padx=25)
 
 
 # Ukryj ekran opcji/pomocy i pokaż menu główne
@@ -94,6 +95,7 @@ def back_to_menu():
     help_frame.pack_forget()
     gui_img_frame.pack_forget()
     gui_desc_frame.pack_forget()
+    gui_proceeding_frame.pack_forget()
 
     start_button.pack(pady=20)
     options_button.pack(pady=20)
@@ -246,6 +248,7 @@ if __name__ == "__main__":
     # Opisy gui
     gui_img_frame = tk.Frame(root, bg="#67B7D1")
     gui_desc_frame = tk.Frame(root, bg="#67B7D1")
+    gui_proceeding_frame = tk.Frame(root, bg="#67B7D1")
 
     blue_square_img = tk.PhotoImage(file="assets/blueSquareMarker.png")
     black_square_img = tk.PhotoImage(file="assets/squareMarker.png")
@@ -278,6 +281,20 @@ if __name__ == "__main__":
     label_text = tk.Label(gui_desc_frame, text="Zielony checkmark służy do potwierdzania decyzji", fg="#00004d",
                           bg="#3ba1c2")
     label_text.pack(side=tk.TOP, pady=13)
+
+    # Dodawanie opisu przebiegu rozgrywki
+    label_text = tk.Label(gui_proceeding_frame, text="Na początku rozgrywki musisz stawić 13 statków coraz większego "
+                                                     "rozmiaru (od 1 do 6).\nKiedy stawisz wszystkie elementy danego "
+                                                     "statku, musisz ostatecznie potwierdzić że go stawiasz.\nUwaga, "
+                                                     "dany statek musi być cały połączony\ntj. nie może się składać z "
+                                                     "elementów nieznajdujących się obok siebie.\nPo fazie stawiania "
+                                                     "rozpoczyna się faza strzelania:\nna zmianę z przeciwnikiem "
+                                                     "wybieracie miejsce na planszy oponenta\ni sprawdzacie, czy "
+                                                     "zestrzeliliście część statku.\nWygrywa gracz, który pierwszy "
+                                                     "zestrzeli wszystkie elementy statków wroga.",
+                                                fg="#00004d", bg="#3ba1c2")
+    label_text.pack(side=tk.TOP, pady=13)
+
 
     # Uruchomienie głównej pętli programu
     root.mainloop()
