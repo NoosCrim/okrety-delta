@@ -31,6 +31,10 @@
 		<Compiler>
 			<Add option="-Wall" />
 		</Compiler>
+		<Unit filename="../messages.cpp" />
+		<Unit filename="../messages.hpp" />
+		<Unit filename="../newServer.cpp" />
+		<Unit filename="../server.hpp" />
 		<Extensions>
 			<lib_finder disable_auto="1" />
 		</Extensions>

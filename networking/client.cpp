@@ -15,7 +15,6 @@ bool AsyncClient::start()
 
         // Start asynchronous read
         read();
-        fire(123, 456, 789);
 
         // Run the io_context to keep the program alive
         return true;
@@ -52,7 +51,7 @@ void AsyncClient::graczPrzegral(int player)
 {
     write(Messanger::przegranaGracza(player));
 }
-void AsyncClient::setHandler(const std::function<void(MessageCode)>& _handler)
+void AsyncClient::setHandler(const std::function<void(MessageCode, int, int, int)>& _handler)
 {
     handler = _handler;
 }
@@ -73,7 +72,7 @@ void AsyncClient::write(const std::string&  message)
     asio::async_write(socket_, asio::buffer(message),
                       [this, message](std::error_code ec, std::size_t /*length*/) {
         if (!ec) {
-            std::clog << "Sent: " << message << std::endl;
+            std::clog << "Sent: " << message;
 
         } else {
             std::clog << "Write error: " << ec.message() << std::endl;
@@ -100,20 +99,12 @@ void AsyncClient::handleRead()
     is >> msgCode1; is >> msgCode2;
     std::clog << "message type: " << msgCode1 << " " << msgCode2 << std::endl;
 
-    MessageCode msgCode = messageCodesOdwrot[msgCode1 + " " + msgCode2]; std::string player_ = ""; std::string x = ""; std::string y = ""; int incominPlayerNumber_ = -1;
+    MessageCode msgCode = messageCodesOdwrot[msgCode1 + " " + msgCode2]; std::string player_ = ""; std::string x = ""; std::string y = ""; int incominPlayerNumber_ = -1; int X = -1; int Y = -1;
     switch (msgCode) {
         case MessageCode::ustawSwojNumer:
             is >> player_;
             playerNumber_ = stoi(player_);
             std::clog << "Ustawilem playerNumber_ na: " << playerNumber_ << std::endl;
-            break;
-
-        case MessageCode::zacznij:
-            is >> player_;
-            incominPlayerNumber_ = stoi(player_);
-            if (incominPlayerNumber_ != playerNumber_) break;
-            isMyTurn_ = true;
-            std::clog << "Ustawilem isMyTurn_ na: " << isMyTurn_ << std::endl;
             break;
 
         case MessageCode::wyszedlGracz:
@@ -130,6 +121,21 @@ void AsyncClient::handleRead()
             std::clog << "Ustawilem isMyTurn_ na: " << isMyTurn_ << " bo ture zaczyna teraz gracz nr: " << incominPlayerNumber_ << std::endl;
             break;
 
+        case MessageCode::strzal:
+            is >> x >> y >> player_;
+            X = stoi(x);
+            Y = stoi(y);
+            incominPlayerNumber_ = stoi(player_);
+            std::clog << "Odebralem wiadomosc o strzale o w miejscu: " << X << " " << Y << " od gracza numer: " << incominPlayerNumber_ << std::endl;
+            break;
+
+        case MessageCode::niePoprawnyStrzal:
+            is >> x >> y >> player_;
+            X = stoi(x);
+            Y = stoi(y);
+            incominPlayerNumber_ = stoi(player_);
+            std::clog << "Odebralem wiadomosc o nie poprawnym strzale o w miejscu: " << X << " " << Y << " od gracza numer: " << incominPlayerNumber_ << std::endl;
+            break;
 
         default:
             std::clog << "jestem w default no troche mnie tu nie powinno byc niby hmmm" << std::endl;
@@ -139,9 +145,9 @@ void AsyncClient::handleRead()
     std::getline(is, message);
     if(x != "") message = msgCode1 + " " + msgCode2 + " " + x + " " +  y + " " + player_ + message;
     else message = msgCode1 + " " + msgCode2 + " " + player_ + message;
-    std::clog << "Incoming message: " << message << std::endl;
+    std::clog << "Incoming message: " << message;
 
-    handler(msgCode);
+    handler(msgCode, X, Y, incominPlayerNumber_);
     read();
 }
 

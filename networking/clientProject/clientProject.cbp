@@ -31,6 +31,11 @@
 		<Compiler>
 			<Add option="-Wall" />
 		</Compiler>
+		<Unit filename="../client.cpp" />
+		<Unit filename="../client.hpp" />
+		<Unit filename="../messages.cpp" />
+		<Unit filename="../messages.hpp" />
+		<Unit filename="../newClient.cpp" />
 		<Extensions>
 			<lib_finder disable_auto="1" />
 		</Extensions>
