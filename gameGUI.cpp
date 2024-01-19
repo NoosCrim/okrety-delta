@@ -128,11 +128,11 @@ void OkretyGame::MessageHandler(MessageCode msgCode, int x, int y, int playerNum
         }
         break;
     case MessageCode::przegranaGracza:
-        delete playerBoardSprite;
-        delete enemyBoardSprite;
+        if(playerBoardSprite) delete playerBoardSprite;
+        if(enemyBoardSprite) delete enemyBoardSprite;
         playerBoardSprite = enemyBoardSprite = nullptr;
-        delete header;
-        delete checkButton;
+        if(header)delete header;
+        if(checkButton) delete checkButton;
         if(timer) delete timer;
         if(playerNum == netClient.getPlayerNumber())
         {
@@ -148,6 +148,9 @@ void OkretyGame::MessageHandler(MessageCode msgCode, int x, int y, int playerNum
             else
                 header = AVE::Sprite::CreateSprite(winner,0,0,256,64,wW/2-wW*(1.0f-margin)/2,wH/2-wW*64/256*(1.0f-margin)/2,wW*(1.0f-margin),wW*64/256*(1.0f-margin));
         }
+        break;
+    case MessageCode::ustawSwojNumer:
+        StartGame();
         break;
     default:
         std::clog << "Got message not yet handled" << std::endl;
@@ -304,10 +307,37 @@ OkretyGame::OkretyGame(AsyncClient& _netClient) :
 {
 
 }
+void OkretyGame::StartGame()
+{
+    marker1 = AVE::Sprite::CreateSprite(blueSquareTex,0,0,2000,2000,0,0,50,50,0,false,false);
+    marker1->visible = false;
+    marker2 = AVE::Sprite::CreateSprite(blueCircleTex,0,0,2000,2000,0,0,50,50,0,false,false);
+    marker2->visible = false;
+    if(header) delete header;
+    float checkButtonSize, boardSize;
+    t = 0.5f * wW < 0.8f * wH? 0.5f * wW : 0.8f * wH;
+    boardSize = t * (1.0f-margin);
+    checkButtonSize = (wW - 2*boardSize)*(1.0f-buttonMargin)/2;
+    playerBoardSprite = Board::CreateBoard(checkerTex,marker1,0,0,BATTLESHIPS_BOARD_SIZE,BATTLESHIPS_BOARD_SIZE,
+        margin * 0.5f * t,wH - margin*0.5f*t - boardSize,boardSize,boardSize,
+        BATTLESHIPS_BOARD_SIZE,BATTLESHIPS_BOARD_SIZE, *this);
+    enemyBoardSprite = Board::CreateBoard(checkerTex,marker2,0,0,BATTLESHIPS_BOARD_SIZE,BATTLESHIPS_BOARD_SIZE,
+        margin * 0.5f * t + wW/2,wH - margin*0.5f*t - boardSize,boardSize,boardSize,
+        BATTLESHIPS_BOARD_SIZE,BATTLESHIPS_BOARD_SIZE, *this);
+    playerBoardSprite -> capOne = false;
+    enemyBoardSprite -> capOne = true;
+    checkButton = Button::CreateButton(checkTex,0,0,32,32,wW/2 - checkButtonSize/2, wH-t/2-checkButtonSize/2, checkButtonSize, checkButtonSize, [this](){clickHandler1();});
+    header = AVE::Sprite::CreateSprite(place_ship_header,0,0,128,16,t*margin*0.5f, t*margin*0.5f, (wW - t*margin) * 0.5f, (wW - t*margin) * 0.5f*0.125f);
+    headerNum = AVE::Sprite::CreateSprite(digits[shipOrder[0]],0,0,16,16,t*margin*0.5f+(wW - t*margin) * 0.5f*0.333f, t*margin*0.5f, (wW - t*margin) * 0.5f*0.125f, (wW - t*margin) * 0.5f*0.125f);
+    enemyBoardSprite->interactable = false;
+    enemyBoardSprite->visible = false;
+    //↓ will be used to create ship placing timer when needed.                                 ↓ seconds here
+    timer = TimerBar::CreateTimerBar(progress_bar,0,0,16,4,0,wH-t*margin/4, wW, t*margin/4, DEFAULT_SHIP_PLACEMENT_TIME);
+}
 void OkretyGame::OnStart()
 {
-    //make it ↓ not a commant when handler type gets changed
-    //netClient.setHandler([this](MessageCode code, int x, int y, int playerNum){MessageHandler(code,x,y,playerNum);});
+    netClient.setHandler([this](MessageCode code, int x, int y, int playerNum){MessageHandler(code,x,y,playerNum);});
+    GetSize(&wW, &wH);
     checkerTex = LoadTexture("assets/checkerboard.png");
     crossTex = LoadTexture("assets/crossMarker.png");
     squareTex = LoadTexture("assets/squareMarker.png");
@@ -332,30 +362,11 @@ void OkretyGame::OnStart()
     enemy_turn_header = LoadTexture("assets/enemy_turn.png");
     winner = LoadTexture("assets/winner.png");
     loser = LoadTexture("assets/loser.png");
-    marker1 = AVE::Sprite::CreateSprite(blueSquareTex,0,0,2000,2000,0,0,50,50,0,false,false);
-    marker1->visible = false;
-    marker2 = AVE::Sprite::CreateSprite(blueCircleTex,0,0,2000,2000,0,0,50,50,0,false,false);
-    marker2->visible = false;
-    GetSize(&wW, &wH);
-    float checkButtonSize, boardSize;
-    t = 0.5f * wW < 0.8f * wH? 0.5f * wW : 0.8f * wH;
-    boardSize = t * (1.0f-margin);
-    checkButtonSize = (wW - 2*boardSize)*(1.0f-buttonMargin)/2;
-    playerBoardSprite = Board::CreateBoard(checkerTex,marker1,0,0,BATTLESHIPS_BOARD_SIZE,BATTLESHIPS_BOARD_SIZE,
-        margin * 0.5f * t,wH - margin*0.5f*t - boardSize,boardSize,boardSize,
-        BATTLESHIPS_BOARD_SIZE,BATTLESHIPS_BOARD_SIZE, *this);
-    enemyBoardSprite = Board::CreateBoard(checkerTex,marker2,0,0,BATTLESHIPS_BOARD_SIZE,BATTLESHIPS_BOARD_SIZE,
-        margin * 0.5f * t + wW/2,wH - margin*0.5f*t - boardSize,boardSize,boardSize,
-        BATTLESHIPS_BOARD_SIZE,BATTLESHIPS_BOARD_SIZE, *this);
-    playerBoardSprite -> capOne = false;
-    enemyBoardSprite -> capOne = true;
-    checkButton = Button::CreateButton(checkTex,0,0,32,32,wW/2 - checkButtonSize/2, wH-t/2-checkButtonSize/2, checkButtonSize, checkButtonSize, [this](){clickHandler1();});
-    header = AVE::Sprite::CreateSprite(place_ship_header,0,0,128,16,t*margin*0.5f, t*margin*0.5f, (wW - t*margin) * 0.5f, (wW - t*margin) * 0.5f*0.125f);
-    headerNum = AVE::Sprite::CreateSprite(digits[shipOrder[0]],0,0,16,16,t*margin*0.5f+(wW - t*margin) * 0.5f*0.333f, t*margin*0.5f, (wW - t*margin) * 0.5f*0.125f, (wW - t*margin) * 0.5f*0.125f);
-    enemyBoardSprite->interactable = false;
-    enemyBoardSprite->visible = false;
-    //↓ will be used to create ship placing timer when needed.                                 ↓ seconds here
-    //timer = TimerBar::CreateTimerBar(progress_bar,0,0,16,4,0,wH-t*margin/4, wW, t*margin/4, 30);
+    waiting_for_connection = LoadTexture("assets/waiting_for_connection.png");
+    if(wW / 256 > wH / 64)
+        header = AVE::Sprite::CreateSprite(waiting_for_connection,0,0,256,64,wW/2-wH*256/64*(1.0f-margin)/2,wH/2-wH*(1.0f-margin)/2,wH*256/64*(1.0f-margin),wH*(1.0f-margin));
+    else
+        header = AVE::Sprite::CreateSprite(waiting_for_connection,0,0,256,64,wW/2-wW*(1.0f-margin)/2,wH/2-wW*64/256*(1.0f-margin)/2,wW*(1.0f-margin),wW*64/256*(1.0f-margin));
 }
 void OkretyGame::OnCloseAttempt()
 {
