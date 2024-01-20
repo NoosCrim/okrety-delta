@@ -6,9 +6,17 @@ AsyncClient::AsyncClient(const std::string& server_ip, unsigned short server_por
     {
 
     }
+AsyncClient::~AsyncClient()
+{
+    if(isClosed == false)
+    {
+        wylacz();
+    }
+}
 bool AsyncClient::start()
 {
     try {
+        isClosed = false;
         // Start the asynchronous connection
         socket_.connect(server_endpoint_);
         std::clog << "Connected to the server was succesfull" << std::endl;
@@ -26,6 +34,12 @@ bool AsyncClient::start()
 void AsyncClient::run()
 {
     io_context_.run();
+}
+void AsyncClient::wylacz()
+{
+    isClosed = true;
+    socket_.close();
+    io_context_.stop();
 }
 void AsyncClient::fire(int x, int y, int player)
 {
@@ -162,6 +176,12 @@ void AsyncClient::handleRead()
             is >> player_;
             incominPlayerNumber_ = stoi(player_);
             std::clog << "Odebralem wiadomosc o przegranej gracza numer : " << incominPlayerNumber_ << std::endl;
+            break;
+
+         case MessageCode::ustawStatki:
+            is >> player_;
+            incominPlayerNumber_ = stoi(player_);
+            std::clog << "Odebralem wiadomosc o potrzebie stawienia statku : " << incominPlayerNumber_ << std::endl;
             break;
 
         default:
