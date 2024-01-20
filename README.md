@@ -10,6 +10,7 @@
  ```sudo pacman -S sdl2 sdl2_image asio```
 
  I kompilacja C++:
+ 
  ```g++ -Wall -fexceptions -std=c++23  -c AVE.cpp -o .objs/AVE.o```
  ```g++ -Wall -fexceptions -std=c++23  -c clientMain.cpp -o .objs/clientMain.o```
  ```g++ -Wall -fexceptions -std=c++23  -c common.cpp -o .objs/common.o```

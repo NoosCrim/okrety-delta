@@ -5,6 +5,8 @@ import tkinter as tk
 from tkinter import messagebox, Label, Entry, simpledialog
 
 # Początkowe wartości
+minW = 320
+minH = 280
 window_width = 960
 window_height = 540
 ip_address = "0.0.0.0"
@@ -28,7 +30,7 @@ def launch():
 
         else:
             # messagebox.showinfo("Linux!", "Uruchamiam grę na systemie Linux.")
-            p = subprocess.run("./okrety-delta-client "+result_string, shell=True, check=False)
+            p = subprocess.run("./okrety-delta-client " + result_string, shell=True, check=False)
             returnProcess = p.returncode
             if returnProcess == 1:
                 messagebox.showerror("Błąd", "Złe wejście")
@@ -48,7 +50,7 @@ def show_help():
                                  " dostosowanie doświadczenia rozgrywki. Możesz zmieniać rozmiar okna gry, przełączać "
                                  "między trybem pełnoekranowym a oknem, a także dostosowywać inne ustawienia, takie "
                                  "jak adres IP hosta dla gry wieloosobowej. Dostępne jest również zapoznanie się z "
-                                 "elementami wizualnymi gry przed rozpoczęciem rozgrywki.")
+                                 "elementami wizualnymi gry oraz przebiegiem rozgrywki przed rozpoczęciem partii.")
 
 
 # Przełączania na pełny ekran i zmienianie argumentów wywołania
@@ -60,6 +62,7 @@ def toggle_fullscreen(arguments):
         arguments.append("-Fs")
 
     root.attributes("-fullscreen", not root.attributes("-fullscreen"))
+
 
 def hide_menu():
     start_button.pack_forget()
@@ -118,37 +121,48 @@ def change_button_color_hex(button, hex_color):
 # Aktualizacja zmiennych wywołania w zależności od wpisanych przez gracza wielkośći
 def update_dimensions():
     global window_width, window_height
-    launch_arguments.remove("-Ws")
-    launch_arguments.remove(str(window_width))
-    launch_arguments.remove(str(window_height))
-    launch_arguments.append("-Ws")
-    window_width = int(width_var.get())
-    window_height = int(height_var.get())
-    launch_arguments.append(width_var.get())
-    launch_arguments.append(height_var.get())
+    tempWidth = width_var.get()
+    tempHeight = height_var.get()
+    if tempWidth.isdigit() and tempHeight.isdigit() and int(tempWidth) >= minW and int(tempHeight) >= minH:
+        launch_arguments.remove("-Ws")
+        launch_arguments.remove(str(window_width))
+        launch_arguments.remove(str(window_height))
+        launch_arguments.append("-Ws")
+        window_width = int(tempWidth)
+        window_height = int(tempHeight)
+        launch_arguments.append(str(window_width))
+        launch_arguments.append(str(window_height))
+        root.geometry(f"{window_width}x{window_height}")
+    else:
+        messagebox.showerror("Błąd", "Niepoprawna wielkość okna")
+        width_var.set(str(window_width))
+        height_var.set(str(window_height))
     # print(launch_arguments)
 
 
-# Przyjmij adres IP id od gracza
+# Przyjmij adres IP hosta od gracza
 def get_ip_address():
     global ip_address
+
+    # Trzeba podawać adres IP za każdym włączeniem klienta
+    tempIp = simpledialog.askstring("IP", "Podaj adres IP hosta:")
+
+    if not is_valid_ip(tempIp):
+        messagebox.showerror("Błąd", "Podany adres IP jest niepoprawny.")
+        return
+
     launch_arguments.remove("-H")
     launch_arguments.remove(str(ip_address))
 
-    ip_address = simpledialog.askstring("IP", "Podaj adres IP hosta:")
+    ip_address = tempIp
     launch_arguments.append("-H")
     launch_arguments.append(ip_address)
-
-    if ip_address and is_valid_ip(ip_address):
-        launch()
-    else:
-        messagebox.showerror("Błąd", "Podany adres IP jest niepoprawny.")
+    launch()
 
 
 # Sprawdź czy adres IP jest poprawny
 def is_valid_ip(ip):
     try:
-        # Sprawdzenie, czy adres IP jest poprawny
         ipaddress.IPv4Address(ip)
         return True
     except ipaddress.AddressValueError:
@@ -156,7 +170,7 @@ def is_valid_ip(ip):
 
 
 # Zamknij okno
-def exit():
+def depart():
     root.destroy()
 
 
@@ -184,11 +198,7 @@ if __name__ == "__main__":
     root.tk.call('wm', 'iconphoto', root._w, icon)
 
     # Podstawowy wygląd tablicy argumentów wywołania
-    launch_arguments = ["-Ws", width_var.get(), height_var.get()]
-    launch_arguments.append("-P")
-    launch_arguments.append(str(port))
-    launch_arguments.append("-H")
-    launch_arguments.append(ip_address)
+    launch_arguments = ["-Ws", width_var.get(), height_var.get(), "-P", str(port), "-H", ip_address]
 
     # Nie mam dostępu do wielkości okna na bieżąco więc nawet nie próbuję tego dobrze padować
     # Przyciski do uruchamiania gry, pomocy i opcji
@@ -201,7 +211,7 @@ if __name__ == "__main__":
     help_button = tk.Button(root, text="Pomoc", command=toggle_help_buttons, height=3, width=15)
     help_button.pack(pady=20)
 
-    exit_button = tk.Button(root, text="Wyjście", command=exit, height=3, width=15)
+    exit_button = tk.Button(root, text="Wyjście", command=depart, height=3, width=15)
     exit_button.pack(pady=20)
 
     change_button_color_hex(start_button, "#67B7D1")
@@ -292,9 +302,8 @@ if __name__ == "__main__":
                                                      "wybieracie miejsce na planszy oponenta\ni sprawdzacie, czy "
                                                      "zestrzeliliście część statku.\nWygrywa gracz, który pierwszy "
                                                      "zestrzeli wszystkie elementy statków wroga.",
-                                                fg="#00004d", bg="#3ba1c2")
+                          fg="#00004d", bg="#3ba1c2")
     label_text.pack(side=tk.TOP, pady=13)
-
 
     # Uruchomienie głównej pętli programu
     root.mainloop()
