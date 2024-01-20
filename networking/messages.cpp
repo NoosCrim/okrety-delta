@@ -3,25 +3,23 @@ std::map<MessageCode, std::string> messageCodes = {
     {MessageCode::strzal, "MsgCode: FIRE"},
     {MessageCode::trafiony, "MsgCode: HIT"},
     {MessageCode::niePoprawnyStrzal, "MsgCode: FFIRE"},
-    {MessageCode::poprawnyStrzal, "MsgCode: TFIRE"},
     {MessageCode::startTury, "MsgCode: SOT"},
     {MessageCode::przegranaGracza, "MsgCode: LOSE"},
-    {MessageCode::zacznij, "MsgCode: START"},
     {MessageCode::nieTrafiony, "MsgCode: NHIT"},
     {MessageCode::ustawSwojNumer, "MsgCode: SET"},
-    {MessageCode::wyszedlGracz, "MsgCode: DISC"}
+    {MessageCode::wyszedlGracz, "MsgCode: DISC"},
+    {MessageCode::ustawStatki, "MsgCode: SHIP"}
 };
 std::map<std::string, MessageCode> messageCodesOdwrot = {
     {"MsgCode: FIRE", MessageCode::strzal},
     {"MsgCode: HIT", MessageCode::trafiony},
     {"MsgCode: FFIRE", MessageCode::niePoprawnyStrzal},
-    {"MsgCode: TFIRE", MessageCode::poprawnyStrzal},
     {"MsgCode: SOT", MessageCode::startTury},
     {"MsgCode: LOSE", MessageCode::przegranaGracza},
-    {"MsgCode: START", MessageCode::zacznij},
     {"MsgCode: NHIT", MessageCode::nieTrafiony},
     {"MsgCode: SET", MessageCode::ustawSwojNumer},
-    {"MsgCode: DISC", MessageCode::wyszedlGracz}
+    {"MsgCode: DISC", MessageCode::wyszedlGracz},
+    {"MsgCode: SHIP", MessageCode::ustawStatki}
 };
 namespace Messanger
 {
@@ -41,10 +39,6 @@ namespace Messanger
     {
         return messageCodes[MessageCode::niePoprawnyStrzal] + " " + std::to_string(x) + " " + std::to_string(y) + " " + std::to_string(player) + "\n";
     }
-    std::string poprawnyStrzal(int x, int y, int player)
-    {
-        return messageCodes[MessageCode::poprawnyStrzal] + " " + std::to_string(x) + " " + std::to_string(y) + " " + std::to_string(player) + "\n";
-    }
     std::string startTury(int player)
     {
         return messageCodes[MessageCode::startTury] + " " + std::to_string(player) + "\n";
@@ -53,13 +47,13 @@ namespace Messanger
     {
         return messageCodes[MessageCode::przegranaGracza] + " " + std::to_string(player) + "\n";
     }
-    std::string zacznij(int player)
-    {
-        return messageCodes[MessageCode::zacznij] + " " + std::to_string(player) + "\n";
-    }
     std::string ustawSwojNumer(int player)
     {
         return messageCodes[MessageCode::ustawSwojNumer] + " " + std::to_string(player) + "\n";
+    }
+    std::string ustawStatki(int player)
+    {
+        return messageCodes[MessageCode::ustawStatki] + " " + std::to_string(player) + "\n";
     }
     std::string wyszedlGracz()
     {

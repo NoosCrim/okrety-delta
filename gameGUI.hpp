@@ -49,6 +49,7 @@ class OkretyGame : public AVE::Window
     void EndTurn();
     void StartTurn();
     void WaitAnswer();
+    void StartGame();
     void MessageHandler(MessageCode msgCode, int x, int y, int playerNum);
     class TimerBar : virtual AVE::Sprite
     {
@@ -91,11 +92,11 @@ private:
     int wW, wH;
     AVE::Texture* digits[10];
     AVE::Texture *checkerTex, *crossTex, *checkTex, *squareTex, *circleTex, *blueSquareTex, *blueCircleTex, *progress_bar,
-    *enemy_turn_header, *shoot_your_shot_header, *wait_for_answer_header, *place_ship_header, *loser, *winner;
-    AVE::Sprite *marker1, *marker2, *header, *headerNum;
+    *enemy_turn_header, *shoot_your_shot_header, *wait_for_answer_header, *place_ship_header, *waiting_for_connection, *loser, *winner;
+    AVE::Sprite *marker1, *marker2, *header = nullptr, *headerNum = nullptr;
     TimerBar *timer = nullptr;
-    Button *checkButton;
-    Board *playerBoardSprite, *enemyBoardSprite;
+    Button *checkButton = nullptr;
+    Board *playerBoardSprite = nullptr, *enemyBoardSprite = nullptr;
     Game::Client::PlayerBoard playerBoard;
     AsyncClient& netClient;
     void OnStart() override;
