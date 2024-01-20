@@ -6,20 +6,14 @@
 		<Option pch_mode="2" />
 		<Option compiler="gcc" />
 		<Build>
-			<Target title="Debug">
-				<Option output="okrety-delta" prefix_auto="1" extension_auto="1" />
-				<Option working_dir="../okrety-delta" />
-				<Option object_output="obj/Debug/" />
-				<Option type="1" />
-				<Option compiler="gcc" />
-				<Compiler>
-					<Add option="-g" />
-				</Compiler>
-			</Target>
 			<Target title="Client">
 				<Option output="okrety-delta-client" prefix_auto="1" extension_auto="1" />
 				<Option type="1" />
 				<Option compiler="gcc" />
+				<Linker>
+					<Add library="SDL2" />
+					<Add library="SDL2_image" />
+				</Linker>
 			</Target>
 			<Target title="Server">
 				<Option output="okrety-delta-server" prefix_auto="1" extension_auto="1" />
@@ -31,62 +25,72 @@
 			<Add option="-Wall" />
 			<Add option="-fexceptions" />
 		</Compiler>
-		<Linker>
-			<Add library="SDL2" />
-			<Add library="SDL2_image" />
-		</Linker>
-		<Unit filename="AVE.cpp" />
-		<Unit filename="AVE.hpp" />
+		<Unit filename="AVE.cpp">
+			<Option target="Client" />
+		</Unit>
+		<Unit filename="AVE.hpp">
+			<Option target="Client" />
+		</Unit>
 		<Unit filename="clientMain.cpp">
 			<Option target="Client" />
 		</Unit>
 		<Unit filename="common.cpp" />
 		<Unit filename="common.hpp" />
-		<Unit filename="event.cpp" />
-		<Unit filename="event.hpp" />
+		<Unit filename="event.cpp">
+			<Option target="Client" />
+		</Unit>
+		<Unit filename="event.hpp">
+			<Option target="Client" />
+		</Unit>
 		<Unit filename="gameCONSTS.cpp" />
 		<Unit filename="gameCONSTS.hpp" />
 		<Unit filename="gameClient.cpp">
-			<Option target="Debug" />
 			<Option target="Client" />
 		</Unit>
 		<Unit filename="gameClient.hpp">
-			<Option target="Debug" />
 			<Option target="Client" />
 		</Unit>
 		<Unit filename="gameCommon.cpp" />
 		<Unit filename="gameCommon.hpp" />
 		<Unit filename="gameGUI.cpp">
-			<Option target="Debug" />
 			<Option target="Client" />
 		</Unit>
 		<Unit filename="gameGUI.hpp">
-			<Option target="Debug" />
 			<Option target="Client" />
 		</Unit>
 		<Unit filename="networking/client.cpp" />
 		<Unit filename="networking/client.hpp">
-			<Option target="Debug" />
 			<Option target="Client" />
 		</Unit>
 		<Unit filename="networking/messages.cpp" />
 		<Unit filename="networking/messages.hpp" />
 		<Unit filename="networking/server.hpp">
-			<Option target="Debug" />
 			<Option target="Server" />
 		</Unit>
 		<Unit filename="serverMain.cpp">
 			<Option target="Server" />
 		</Unit>
-		<Unit filename="sprite.cpp" />
-		<Unit filename="sprite.hpp" />
-		<Unit filename="testing.cpp">
-			<Option target="Debug" />
+		<Unit filename="sprite.cpp">
+			<Option target="Client" />
 		</Unit>
-		<Unit filename="texture.cpp" />
-		<Unit filename="texture.hpp" />
-		<Unit filename="window.cpp" />
-		<Unit filename="window.hpp" />
+		<Unit filename="sprite.hpp">
+			<Option target="Client" />
+		</Unit>
+		<Unit filename="testing.cpp">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="texture.cpp">
+			<Option target="Client" />
+		</Unit>
+		<Unit filename="texture.hpp">
+			<Option target="Client" />
+		</Unit>
+		<Unit filename="window.cpp">
+			<Option target="Client" />
+		</Unit>
+		<Unit filename="window.hpp">
+			<Option target="Client" />
+		</Unit>
 		<Extensions />
 	</Project>
 </CodeBlocks_project_file>
