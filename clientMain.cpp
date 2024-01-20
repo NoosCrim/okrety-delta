@@ -43,7 +43,7 @@ int main(int argc, const char *argv[])
     /// end of flag handling
     AsyncClient netClient(targetIP, port);
     if(!netClient.start())
-        return 1;
+        return 2;
     AVE::Init();
     OkretyGame game(netClient);
     game.Open("Okrety delta", 0,0, windowWidth, windowHeight);
