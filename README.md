@@ -1,4 +1,5 @@
-# okrety-delta
+# Okręty-delta
+ **Okręty-delta to rekonstukcja klasycznej gry w statki umożliwiająca granie ze znajomymi na różnych komputerach w tej samej sieci.**
 
  Żeby skompilować moduły C++ potrzeba 'sdl2', 'sdl2_image' oraz 'asio':
 
@@ -62,7 +63,9 @@ g++  -o okrety-delta-server .objs/common.o .objs/gameCommon.o .objs/gameCONSTS.o
  
  ```python [repository path]/launcher.py```
  
- 
+
+**Aby zagrać należy najpierw włączyć serwer na jednym z komputerów i połączyć się do niego (127.0.0.1), a druga osoba powinna wpisać adres IP hosta w launcherze.**
+
 W celu włączenia serwera trzeba z terminala użyć komendy:
 
 Linuks:
