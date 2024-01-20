@@ -3,9 +3,9 @@
 int main(int argc, const char *argv[])
 {
     int windowWidth = 1280, windowHeight = 960;
-    const char* targetIP = nullptr;
+    const char* targetIP = "127.0.0.1";
     bool useFullscreen = false;
-    unsigned int port = 0;
+    unsigned int port = 2137;
     /// flag handling
     for(int i = 1; i < argc; i++)
     {
@@ -41,11 +41,12 @@ int main(int argc, const char *argv[])
         return 1;
     }
     /// end of flag handling
+    AVE::Init();
     AsyncClient netClient(targetIP, port);
+    OkretyGame game(netClient);
+    netClient.setHandler([&game](MessageCode code, int x, int y, int playerNum){game.MessageHandler(code,x,y,playerNum);});
     if(!netClient.start())
         return 2;
-    AVE::Init();
-    OkretyGame game(netClient);
     game.Open("Okrety delta", 0,0, windowWidth, windowHeight);
     if(useFullscreen)
         game.SetBorderless();

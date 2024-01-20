@@ -32,6 +32,7 @@ void OkretyGame::EndTurn()
 {
     AVE::Sprite *temp = header;
     header = AVE::Sprite::CreateSprite(enemy_turn_header,temp->sX,temp->sY,temp->sW,temp->sH,temp->x,temp->y,temp->w,temp->h);
+    if(temp)
     delete temp;
     checkButton->visible = true;
     checkButton->visible = false;
@@ -41,6 +42,7 @@ void OkretyGame::StartTurn()
 {
     AVE::Sprite *temp = header;
     header = AVE::Sprite::CreateSprite(shoot_your_shot_header,temp->sX,temp->sY,temp->sW,temp->sH,temp->x,temp->y,temp->w,temp->h);
+    if(temp)
     delete temp;
     checkButton->visible = true;
     enemyBoardSprite->interactable = true;
@@ -49,6 +51,7 @@ void OkretyGame::WaitAnswer()
 {
     AVE::Sprite *temp = header;
     header = AVE::Sprite::CreateSprite(wait_for_answer_header,temp->sX,temp->sY,temp->sW,temp->sH,temp->x,temp->y,temp->w,temp->h);
+    if(temp)
     delete temp;
     checkButton->visible = true;
     checkButton->visible = false;
@@ -56,6 +59,8 @@ void OkretyGame::WaitAnswer()
 }
 void OkretyGame::MessageHandler(MessageCode msgCode, int x, int y, int playerNum)
 {
+    LockUpdate();
+    std::cout << "StartHandler" << std::endl;
     switch(msgCode)
     {
     case MessageCode::startTury:
@@ -120,9 +125,9 @@ void OkretyGame::MessageHandler(MessageCode msgCode, int x, int y, int playerNum
                 if(playerBoard.IsDead())
                     netClient.graczPrzegral(netClient.getPlayerNumber());
                 else
-                    netClient.trafil(x,y,netClient.getPlayerNumber());
+                    netClient.trafil(x,y,playerNum);
             else
-                netClient.nieTrafil(x,y,netClient.getPlayerNumber());
+                netClient.nieTrafil(x,y,playerNum);
             if(timer) delete timer;
             timer = nullptr;
         }
@@ -132,6 +137,7 @@ void OkretyGame::MessageHandler(MessageCode msgCode, int x, int y, int playerNum
         if(enemyBoardSprite) delete enemyBoardSprite;
         playerBoardSprite = enemyBoardSprite = nullptr;
         if(header)delete header;
+        if(headerNum) delete headerNum;
         if(checkButton) delete checkButton;
         if(timer) delete timer;
         if(playerNum == netClient.getPlayerNumber())
@@ -149,13 +155,28 @@ void OkretyGame::MessageHandler(MessageCode msgCode, int x, int y, int playerNum
                 header = AVE::Sprite::CreateSprite(winner,0,0,256,64,wW/2-wW*(1.0f-margin)/2,wH/2-wW*64/256*(1.0f-margin)/2,wW*(1.0f-margin),wW*64/256*(1.0f-margin));
         }
         break;
-    case MessageCode::ustawSwojNumer:
-        StartGame();
+    case MessageCode::wyszedlGracz:
+        if(playerBoardSprite) delete playerBoardSprite;
+        if(enemyBoardSprite) delete enemyBoardSprite;
+        playerBoardSprite = enemyBoardSprite = nullptr;
+        if(header)delete header;
+        if(headerNum) delete headerNum;
+        if(checkButton) delete checkButton;
+        if(timer) delete timer;
+        if(wW / 256 > wH / 64)
+                header = AVE::Sprite::CreateSprite(winner,0,0,256,64,wW/2-wH*256/64*(1.0f-margin)/2,wH/2-wH*(1.0f-margin)/2,wH*256/64*(1.0f-margin),wH*(1.0f-margin));
+            else
+                header = AVE::Sprite::CreateSprite(winner,0,0,256,64,wW/2-wW*(1.0f-margin)/2,wH/2-wW*64/256*(1.0f-margin)/2,wW*(1.0f-margin),wW*64/256*(1.0f-margin));
+    case MessageCode::ustawStatki:
+        if(playerNum == netClient.getPlayerNumber())
+            StartGame();
         break;
     default:
         std::clog << "Got message not yet handled" << std::endl;
         break;
     }
+    UnlockUpdate();
+    std::cout << "EndHandler" << std::endl;
 }
 void OkretyGame::clickHandler1()
 {
@@ -183,11 +204,13 @@ void OkretyGame::clickHandler1()
                 checkButton->clickHandler = [this](){clickHandler2();};
                 checkButton->visible = false;
                 delete headerNum;
-                StartTurn();
+                headerNum = nullptr;
+                WaitAnswer();
+                netClient.ustawStatki(netClient.getPlayerNumber());
                 if(timer) delete timer;
-                timer = TimerBar::CreateTimerBar(progress_bar,0,0,16,4,0,wH-t*margin/4, wW, t*margin/4, DEFAULT_TURN_TIME);
+                timer = nullptr;
                 /////////////////////////////
-                //MessageHandler(MessageCode::nieTrafiony,0,0,netClient.getPlayerNumber()+1);
+                //MessageHandler(MessageCode::startTury,0,0,netClient.getPlayerNumber()+1);
             }
             else
             {
@@ -336,7 +359,6 @@ void OkretyGame::StartGame()
 }
 void OkretyGame::OnStart()
 {
-    netClient.setHandler([this](MessageCode code, int x, int y, int playerNum){MessageHandler(code,x,y,playerNum);});
     GetSize(&wW, &wH);
     checkerTex = LoadTexture("assets/checkerboard.png");
     crossTex = LoadTexture("assets/crossMarker.png");
@@ -367,6 +389,9 @@ void OkretyGame::OnStart()
         header = AVE::Sprite::CreateSprite(waiting_for_connection,0,0,256,64,wW/2-wH*256/64*(1.0f-margin)/2,wH/2-wH*(1.0f-margin)/2,wH*256/64*(1.0f-margin),wH*(1.0f-margin));
     else
         header = AVE::Sprite::CreateSprite(waiting_for_connection,0,0,256,64,wW/2-wW*(1.0f-margin)/2,wH/2-wW*64/256*(1.0f-margin)/2,wW*(1.0f-margin),wW*64/256*(1.0f-margin));
+    networking = std::thread([this](){netClient.run();});
+    ///////////////////////////////////////////////
+    //MessageHandler(MessageCode::ustawStatki, 0,0,netClient.getPlayerNumber());
 }
 void OkretyGame::OnCloseAttempt()
 {
@@ -375,6 +400,7 @@ void OkretyGame::OnCloseAttempt()
     if(enemyBoardSprite)
         delete enemyBoardSprite;
     Close();
+    networking.join();
 }
 
 

@@ -14,6 +14,7 @@ namespace AVE
     }
     void Window::Update()
     {
+        LockUpdate();
         HandleEvents();
         if(mouseClickL)
         {
@@ -37,6 +38,7 @@ namespace AVE
         }
         Draw();
         OnUpdate();
+        UnlockUpdate();
     }
     SDL_Window* Window::GetWindowHandle()
     {
@@ -204,6 +206,14 @@ namespace AVE
         shouldMainLoopStop = true;
         mainLoopLock.lock();
         mainLoopLock.unlock();
+    }
+    void Window::LockUpdate()
+    {
+        updateLock.lock();
+    }
+    void Window::UnlockUpdate()
+    {
+        updateLock.unlock();
     }
     bool Window::StartSharedMainLoop(Window** windows, uint32_t windowCount, void (*OnSharedUpdate)())
     {

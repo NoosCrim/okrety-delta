@@ -21,7 +21,7 @@ namespace AVE
         SDL_Window* window = nullptr;
         SDL_Renderer* renderer = nullptr;
         bool isOpen = false;
-        std::mutex mainLoopLock;
+        std::mutex mainLoopLock, updateLock;
         static std::mutex sharedMainLoopLock;
         bool shouldMainLoopStop = false;
         static bool shouldSharedMainLoopStop;
@@ -78,6 +78,8 @@ namespace AVE
         void Draw();
 
         void StartMainLoop();
+        void LockUpdate();
+        void UnlockUpdate();
         void StopMainLoop();
         void BlockingStopMainLoop();
         static bool StartSharedMainLoop(Window** windows, uint32_t windowCount, void (*OnSharedUpdate)());

@@ -7,6 +7,7 @@
 #include "gameCommon.hpp"
 #include "gameCONSTS.hpp"
 #include "networking/client.hpp"
+#include <mutex>
 class AsyncClient;
 class FlashAnim : public virtual AVE::Sprite
 {
@@ -50,7 +51,6 @@ class OkretyGame : public AVE::Window
     void StartTurn();
     void WaitAnswer();
     void StartGame();
-    void MessageHandler(MessageCode msgCode, int x, int y, int playerNum);
     class TimerBar : virtual AVE::Sprite
     {
     private:
@@ -86,6 +86,7 @@ class OkretyGame : public AVE::Window
         virtual ~Board();
     };
 private:
+    std::thread networking;
     unsigned int placedShips = 0;
     std::vector<Game::Coords> shots;
     float margin = 0.1f, buttonMargin = 0.1f, t;
@@ -102,5 +103,6 @@ private:
     void OnStart() override;
     void OnCloseAttempt() override;
 public:
+    void MessageHandler(MessageCode msgCode, int x, int y, int playerNum);
     OkretyGame(AsyncClient& _netClient);
 };
