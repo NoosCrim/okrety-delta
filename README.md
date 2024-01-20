@@ -67,11 +67,11 @@ W celu włączenia serwera trzeba z terminala użyć komendy:
 
 Linuks:
 
-```[repository path]/okrety-delta-server'''
+```[repository path]/okrety-delta-server```
 
 Windows:
 
-```[repository path]/okrety-delta-server.exe'''
+```[repository path]/okrety-delta-server.exe```
 
 
 Natomiast w celu włączenia klienta:
