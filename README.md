@@ -1,6 +1,6 @@
 # okrety-delta
 
- Żeby skompilować moduły C++ potrzeba 'sdl2' i 'sdl2_image':
+ Żeby skompilować moduły C++ potrzeba 'sdl2', 'sdl2_image' oraz 'asio':
 
  (Linux Ubuntu, Debian, etc.)
  ```sudo apt-get install libsdl2-dev libsdl2-image-dev```
@@ -67,11 +67,11 @@ W celu włączenia serwera trzeba z terminala użyć komendy:
 
 Linuks:
 
-```[repository path]/okrety-delta-server'''
+```[repository path]/okrety-delta-server```
 
 Windows:
 
-```[repository path]/okrety-delta-server.exe'''
+```[repository path]/okrety-delta-server.exe```
 
 
 Natomiast w celu włączenia klienta:
