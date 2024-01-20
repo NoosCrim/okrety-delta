@@ -1,6 +1,6 @@
 # okrety-delta
 
- Żeby skompilować moduły C++ potrzeba 'sdl2' i 'sdl2_image':
+ Żeby skompilować moduły C++ potrzeba 'sdl2', 'sdl2_image' oraz 'asio':
 
  (Linux Ubuntu, Debian, etc.)
  ```sudo apt-get install libsdl2-dev libsdl2-image-dev```
