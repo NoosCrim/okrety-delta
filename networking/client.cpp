@@ -35,6 +35,10 @@ void AsyncClient::fire(int x, int y)
 {
     write(Messanger::strzal(x,y,playerNumber_));
 }
+void AsyncClient::ustawStatki(int player)
+{
+    write(Messanger::ustawStatki(player));
+}
 void AsyncClient::trafil(int x, int y, int player)
 {
     write(Messanger::trafiony(x,y,player));
@@ -63,10 +67,11 @@ bool AsyncClient::getIsMyTurn()
 {
     return isMyTurn_;
 }
-void AsyncClient::write(const std::string&  message)
+void AsyncClient::write(const std::string&  mes)
 {
     // Data to be sent
-    std::clog << "Writing: " << message << std::endl;
+    std::string message = mes; if(message[message.length() - 1] != '\n') message += "\n";
+    std::clog << "Writing: " << message;
 
     // Start asynchronous write operation
     asio::async_write(socket_, asio::buffer(message),
@@ -137,6 +142,28 @@ void AsyncClient::handleRead()
             std::clog << "Odebralem wiadomosc o nie poprawnym strzale o w miejscu: " << X << " " << Y << " od gracza numer: " << incominPlayerNumber_ << std::endl;
             break;
 
+        case MessageCode::nieTrafiony:
+            is >> x >> y >> player_;
+            X = stoi(x);
+            Y = stoi(y);
+            incominPlayerNumber_ = stoi(player_);
+            std::clog << "Odebralem wiadomosc o nie trafionym strzale o w miejscu: " << X << " " << Y << " byl to strzal gracza: " << incominPlayerNumber_ << std::endl;
+            break;
+
+         case MessageCode::trafiony:
+            is >> x >> y >> player_;
+            X = stoi(x);
+            Y = stoi(y);
+            incominPlayerNumber_ = stoi(player_);
+            std::clog << "Odebralem wiadomosc o trafionym strzale o w miejscu: " << X << " " << Y << " byl to strzal gracza: " << incominPlayerNumber_ << std::endl;
+            break;
+
+         case MessageCode::przegranaGracza:
+            is >> player_;
+            incominPlayerNumber_ = stoi(player_);
+            std::clog << "Odebralem wiadomosc o przegranej gracza numer : " << incominPlayerNumber_ << std::endl;
+            break;
+
         default:
             std::clog << "jestem w default no troche mnie tu nie powinno byc niby hmmm" << std::endl;
             break;
@@ -145,6 +172,7 @@ void AsyncClient::handleRead()
     std::getline(is, message);
     if(x != "") message = msgCode1 + " " + msgCode2 + " " + x + " " +  y + " " + player_ + message;
     else message = msgCode1 + " " + msgCode2 + " " + player_ + message;
+    if(message[message.length() - 1] != '\n') message += "\n";
     std::clog << "Incoming message: " << message;
 
     handler(msgCode, X, Y, incominPlayerNumber_);

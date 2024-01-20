@@ -25,6 +25,8 @@ public:
 
     void graczPrzegral(int player);
 
+    void ustawStatki(int player);
+
     void setHandler(const std::function<void(MessageCode, int, int, int)>& _handler);
 
     int getPlayerNumber();

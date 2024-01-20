@@ -3,6 +3,8 @@
 #include <functional>
 #include <thread>
 #include "client.hpp"
+
+using std::cin;
 AsyncClient*  client_;
 void clientThreadFunction() {
     // Replace "127.0.0.1" and 12345 with your server's IP address and port
@@ -30,10 +32,36 @@ int main() {
         // Funkcja obsługująca zdarzenie timera
         std::function<void(const asio::error_code&)> timerHandler = [&](const asio::error_code& ec) {
         if (!ec) {
-            std::cout << "podaj kordynaty x i y twojego strzalu" << std::endl;
-            int x; int y; std::cin>>x>>y;
-            client_->fire(x,y);
-            client_->niePoprawnieStrzelil(x,y,1);
+            std::cout << "podaj rodzaj interakcji" << std::endl; int x,y,player;
+            std::cout << "1 - strzal,   2 - niePoprawnieStrzelil,   3-Niedostal,   4 - dostal,  5 - Przegral  6 - Ustaw statek" << std::endl;
+            int z; cin>>z;
+            switch(z)
+            {
+            case 1:
+                cin>>x>>y>>player;
+                client_->fire(x,y,player);
+                break;
+            case 2:
+                cin>>x>>y>>player;
+                client_->niePoprawnieStrzelil(x,y,player);
+                break;
+            case 3:
+                cin>>x>>y>>player;
+                client_->nieTrafil(x,y,player);
+                break;
+            case 4:
+                cin>>x>>y>>player;
+                client_->trafil(x,y,player);
+                break;
+            case 5:
+                cin>>player;
+                client_->graczPrzegral(player);
+                break;
+            case 6:
+                cin>>player;
+                client_->ustawStatki(player);
+                break;
+            }
             // Dodaj kod do wysyłania wiadomości na strumień wejścia tutaj
 
             // Ponowne ustawienie timera

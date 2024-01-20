@@ -7,7 +7,7 @@ int main() {
     try {
         asio::io_context ioContext;
         Server server(ioContext, SERVER_PORT, STARTING_PLAYER_NUMBER);
-        ioContext.dispatch();
+        ioContext.run();
     } catch (const std::exception& e) {
         std::cerr << "Exception: " << e.what() << std::endl;
     }
