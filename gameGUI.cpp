@@ -345,7 +345,7 @@ void OkretyGame::StartGame()
         margin * 0.5f * t,wH - margin*0.5f*t - boardSize,boardSize,boardSize,
         BATTLESHIPS_BOARD_SIZE,BATTLESHIPS_BOARD_SIZE, *this);
     enemyBoardSprite = Board::CreateBoard(checkerTex,marker2,0,0,BATTLESHIPS_BOARD_SIZE,BATTLESHIPS_BOARD_SIZE,
-        margin * 0.5f * t + wW/2,wH - margin*0.5f*t - boardSize,boardSize,boardSize,
+        wW - margin * 0.5f * t - boardSize, wH - margin*0.5f*t - boardSize,boardSize,boardSize,
         BATTLESHIPS_BOARD_SIZE,BATTLESHIPS_BOARD_SIZE, *this);
     playerBoardSprite -> capOne = false;
     enemyBoardSprite -> capOne = true;
@@ -399,8 +399,9 @@ void OkretyGame::OnCloseAttempt()
         delete playerBoardSprite;
     if(enemyBoardSprite)
         delete enemyBoardSprite;
-    Close();
+    netClient.wylacz();
     networking.join();
+    Close();
 }
 
 

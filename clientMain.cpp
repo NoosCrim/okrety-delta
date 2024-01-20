@@ -2,7 +2,7 @@
 #include "networking/client.hpp"
 int main(int argc, const char *argv[])
 {
-    int windowWidth = 1280, windowHeight = 960;
+    int windowWidth = 960, windowHeight = 480;
     const char* targetIP = "127.0.0.1";
     bool useFullscreen = false;
     unsigned int port = 2137;
