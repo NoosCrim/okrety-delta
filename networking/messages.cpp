@@ -7,7 +7,8 @@ std::map<MessageCode, std::string> messageCodes = {
     {MessageCode::przegranaGracza, "MsgCode: LOSE"},
     {MessageCode::nieTrafiony, "MsgCode: NHIT"},
     {MessageCode::ustawSwojNumer, "MsgCode: SET"},
-    {MessageCode::wyszedlGracz, "MsgCode: DISC"}
+    {MessageCode::wyszedlGracz, "MsgCode: DISC"},
+    {MessageCode::ustawStatki, "MsgCode: SHIP"}
 };
 std::map<std::string, MessageCode> messageCodesOdwrot = {
     {"MsgCode: FIRE", MessageCode::strzal},
@@ -17,7 +18,8 @@ std::map<std::string, MessageCode> messageCodesOdwrot = {
     {"MsgCode: LOSE", MessageCode::przegranaGracza},
     {"MsgCode: NHIT", MessageCode::nieTrafiony},
     {"MsgCode: SET", MessageCode::ustawSwojNumer},
-    {"MsgCode: DISC", MessageCode::wyszedlGracz}
+    {"MsgCode: DISC", MessageCode::wyszedlGracz},
+    {"MsgCode: SHIP", MessageCode::ustawStatki}
 };
 namespace Messanger
 {
@@ -48,6 +50,10 @@ namespace Messanger
     std::string ustawSwojNumer(int player)
     {
         return messageCodes[MessageCode::ustawSwojNumer] + " " + std::to_string(player) + "\n";
+    }
+    std::string ustawStatki(int player)
+    {
+        return messageCodes[MessageCode::ustawStatki] + " " + std::to_string(player) + "\n";
     }
     std::string wyszedlGracz()
     {

@@ -13,7 +13,8 @@ enum class MessageCode {
     przegranaGracza = 4,
     nieTrafiony = 5,
     ustawSwojNumer = 6,
-    wyszedlGracz = 7
+    wyszedlGracz = 7,
+    ustawStatki = 8
 };
 
 extern std::map<MessageCode, std::string> messageCodes;
@@ -46,6 +47,7 @@ namespace Messanger {
     //tworzy wiadomosc o trescji: mowi o tym ze wyszedl gracz i jego numer
     std::string wyszedlGracz();
 
+    std::string ustawStatki(int player);
 
     //do debugowania
     //tworzy wiadomosc o tresci: wyslanego stringa dodaje \n na koncu
