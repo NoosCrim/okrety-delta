@@ -17,12 +17,12 @@
 				</Compiler>
 			</Target>
 			<Target title="Client">
-				<Option output="okrety-delta" prefix_auto="1" extension_auto="1" />
+				<Option output="okrety-delta-client" prefix_auto="1" extension_auto="1" />
 				<Option type="1" />
 				<Option compiler="gcc" />
 			</Target>
 			<Target title="Server">
-				<Option output="okrety-delta" prefix_auto="1" extension_auto="1" />
+				<Option output="okrety-delta-server" prefix_auto="1" extension_auto="1" />
 				<Option type="1" />
 				<Option compiler="gcc" />
 			</Target>
