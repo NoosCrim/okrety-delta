@@ -1,6 +1,7 @@
 #ifndef SERVER_HPP_INCLUDED
 #define SERVER_HPP_INCLUDED
 
+#include <iostream>
 #include <asio.hpp>
 #include <vector>
 #include <memory>
@@ -361,7 +362,7 @@ private:
                                 session->startReading();
                             }
 
-                            shipTimer_.expires_after(std::chrono::seconds(DEFAULT_TURN_TIME));
+                            shipTimer_.expires_after(std::chrono::seconds(DEFAULT_SHIP_PLACEMENT_TIME));
                             shipTimer_.async_wait([this](const asio::error_code& ec) {
                                 if (!ec) {
                                     if(iloscStatkow != MAX_CONNECTIONS)
