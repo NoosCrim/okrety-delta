@@ -32,8 +32,8 @@ int main() {
         // Funkcja obsługująca zdarzenie timera
         std::function<void(const asio::error_code&)> timerHandler = [&](const asio::error_code& ec) {
         if (!ec) {
-            std::cout << "podaj rodzaj interakcji" << std::endl; int x,y,player;
-            std::cout << "1 - strzal,   2 - niePoprawnieStrzelil,   3-Niedostal,   4 - dostal,  5 - Przegral  6 - Ustaw statek" << std::endl;
+            std::cout << "podaj rodzaj interakcji" << std::endl; int x,y,player; bool was = false;
+            std::cout << "1 - strzal,   2 - niePoprawnieStrzelil,   3-Niedostal,   4 - dostal,  5 - Przegral  6 - Ustaw statek    7 - wyjdz" << std::endl;
             int z; cin>>z;
             switch(z)
             {
@@ -61,12 +61,19 @@ int main() {
                 cin>>player;
                 client_->ustawStatki(player);
                 break;
+            case 7:
+                client_->wylacz();
+                was = true;
+                break;
             }
             // Dodaj kod do wysyłania wiadomości na strumień wejścia tutaj
 
             // Ponowne ustawienie timera
-            timer.expires_after(asio::chrono::seconds(5));
-            timer.async_wait(timerHandler);
+            if(was == false)
+            {
+                timer.expires_after(asio::chrono::seconds(5));
+                timer.async_wait(timerHandler);
+            }
         }
         };
 
@@ -75,10 +82,9 @@ int main() {
 
         // Uruchomienie serwera w pętli obsługi zdarzeń
         ioContext.run();
-
+        clientThread.join();
     } catch (const std::exception& e) {
         std::cerr << "Exception: " << e.what() << std::endl;
     }
-
     return 0;
 }

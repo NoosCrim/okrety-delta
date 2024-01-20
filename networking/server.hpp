@@ -58,6 +58,11 @@ public:
         return czyUstawilStatek;
     }
 
+    int getPlayerNumber()
+    {
+        return myPlayerNumber;
+    }
+
     void closeServer()
     {
         //wylaczanie servera (dajmy mu chwile zeby dokonczyl traffic)
@@ -270,7 +275,10 @@ private:
             // Remove this session from the list
             auto self(shared_from_this());
             sessions_.erase(std::remove(sessions_.begin(), sessions_.end(), shared_from_this()), sessions_.end());
-            sendToAll(Messanger::wyszedlGracz());
+            for (auto& session : sessions_) {
+                std::clog << "Writing to socket with endpoit: " << session->socket_.remote_endpoint() << std::endl;
+                session->sendMessage(Messanger::wyszedlGracz());
+        }
 
             closeServer();
             // Nie zmieniam ilosci connectow bo w trakcie gry nie mozna sie polaczyc od tego jest lobby
@@ -360,6 +368,7 @@ private:
                         {
                             for (auto& session : sessions_) {
                                 session->startReading();
+                                session->sendMessage(Messanger::ustawStatki(session->getPlayerNumber()));
                             }
 
                             shipTimer_.expires_after(std::chrono::seconds(DEFAULT_SHIP_PLACEMENT_TIME));
@@ -400,6 +409,7 @@ private:
                 }
 
                 // Continue accepting new connections
+                if(MAX_CONNECTIONS > connections)
                 doAccept();
             });
     }

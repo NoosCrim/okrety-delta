@@ -10,9 +10,11 @@ using namespace asio::ip;
 class AsyncClient {
 public:
     AsyncClient(const std::string& server_ip, unsigned short server_port);
+    ~AsyncClient();
 
     bool start();
     void run();
+    void wylacz();
 
     void fire(int x, int y, int player);
     void fire(int x, int y);
@@ -49,6 +51,7 @@ private:
     asio::streambuf inputBuffer_;
     int playerNumber_;
     bool isMyTurn_ = false;
+    bool isClosed = true;
 };
 
 //PS wypadaloby zmienic wystapienia int'a na inta o stalej wielkosci nie zaleznie od architektury np __int32
