@@ -121,13 +121,20 @@ void OkretyGame::MessageHandler(MessageCode msgCode, int x, int y, int playerNum
     case MessageCode::strzal:
         if(playerNum != netClient.getPlayerNumber())
         {
+            float squareW = playerBoardSprite->w / BATTLESHIPS_BOARD_SIZE, squareH = playerBoardSprite->h / BATTLESHIPS_BOARD_SIZE;
             if(playerBoard.TakeShot({x,y}))
+            {
+                playerBoardSprite->permMarkers.push_back(AVE::Sprite::CreateSprite(crossTex, 0,0,32,32, playerBoardSprite->x+squareW*x, playerBoardSprite->y+squareH*y, squareW, squareH));
                 if(playerBoard.IsDead())
                     netClient.graczPrzegral(netClient.getPlayerNumber());
                 else
                     netClient.trafil(x,y,playerNum);
+            }
             else
+            {
+                playerBoardSprite->permMarkers.push_back(AVE::Sprite::CreateSprite(circleTex, 0,0,32,32, playerBoardSprite->x+squareW*x, playerBoardSprite->y+squareH*y, squareW, squareH));
                 netClient.nieTrafil(x,y,playerNum);
+            }
             if(timer) delete timer;
             timer = nullptr;
         }
